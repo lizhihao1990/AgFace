@@ -1,0 +1,69 @@
+# AgFACE helper R scripts
+
+# my commonly used, handy functions for many AgFACE data analysis purposes 
+
+# Author: Markus Löw, June 2013
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++
+# AgFACE CO2 treatments in 2010 based on ring numbers
+ambient_rings_2010  <- c(1, 8, 12, 14)
+elevated_rings_2010 <- c(3, 5, 9, 13)
+# +++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++
+# capitalise the data frame entries
+# elegant solution with example function from ?toupper
+.simpleCap <- function(x) {
+    s <- strsplit(as.character(x), " ")
+    paste(toupper(substring(s, 1, 1)), substring(s, 2),
+          sep = "")
+}
+# +++++++++++++++++++++++++++++++++++++++++++++
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++
+# Create plots for multiple parameters from a melted dataframe
+# i.e. loop over all parameters
+# allows to specify the variablenames to be used as axis label, treatment colours, xaxis, yaxis, and two facet parameters
+# includes a workaround for pasing strings from a function to facet_grid
+# example usage:
+#my_plots <- dlply(df.melt,
+#                  .(variable),
+#                  function(x) {
+#                  MyMultPlot(x, x$variable, "Date", "value", "CO2_treatment", "Genotype", ".")})
+
+# create plot function suitable for dlply
+MyMultPlot <- function(dataframe, 
+                         label, 
+                         xaxis, 
+                         yaxis, 
+                         treatment_sep, 
+                         facet_var_a,
+                         facet_var_b) {
+
+  require(ggplot2)
+  
+  axis_label <- unique(label)
+ 
+  # workaround for specifying facets from strings in a function from Hadley Wickham:
+  # http://r.789695.n4.nabble.com/ggplot2-proper-use-of-facet-grid-inside-a-function-td906018.html
+  # facets <- facet_grid(paste(facet_var_a, "~ ."))
+  #facets <- facet_grid(paste(facet_var_a, facet_var_b, sep = " ~ "))
+  facets <- facet_grid(paste(facet_var_a, facet_var_b, sep = " ~ "), scales = "free_y")
+  
+  p <- ggplot(dataframe, aes_string(x = xaxis, y = yaxis))
+       p <- p + stat_summary(aes_string(colour = treatment_sep),
+                             fun.data = mean_sdl, mult = 1)
+       p <- p + stat_summary(aes_string(colour = treatment_sep),
+                             fun.data = mean_sdl, mult = 1, geom = "line")
+       p <- p + ylab(axis_label)
+       # p <- p + facet_wrap(facet_var ~ .)
+       p <- p + facets
+       # p <- p + facet_grid(scales = "free_y")
+       p <- p + theme_bw()
+       
+  return(p)
+  
+}
+# +++++++++++++++++++++++++++++++++++++++++++++
