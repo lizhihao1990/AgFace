@@ -27,10 +27,10 @@ MyBoxplot <- function(dataframe,
        if (two_separators == TRUE) {
        p <- p + geom_boxplot(aes_string(fill   = treatment_sep_a, 
                                         linetype = treatment_sep_b), 
-                                  outlier.colour = NA)
+                                  outlier.colour = "grey")
        } else {
        p <- p + geom_boxplot(aes_string(fill   = treatment_sep_a), 
-                                  outlier.colour = NA)}
+                                  outlier.colour = "grey")}
                                   
        p <- p + ylab(axis_label)
        # p <- p + facet_wrap(facet_var ~ .)
@@ -91,4 +91,34 @@ MyBarplot <- function(dataframe,
        
   return(p)
   
+}
+
+# create histograms for all parameters with failed levene
+MyHist <- function(dataframe, 
+                   label,
+                   yaxis, 
+                   treatment_sep_a,
+                   treatment_sep_b,
+                   facet_var_a,
+                   facet_var_b) {
+
+  require(ggplot2)
+
+  axis_label <- unique(label)
+  print(axis_label) 
+  # workaround for specifying facets from strings in a function from Hadley Wickham:
+  # http://r.789695.n4.nabble.com/ggplot2-proper-use-of-facet-grid-inside-a-function-td906018.html
+  # facets <- facet_grid(paste(facet_var_a, "~ ."))
+  #facets <- facet_grid(paste(facet_var_a, facet_var_b, sep = " ~ "))
+  facets <- facet_grid(paste(facet_var_a, facet_var_b, sep = " ~ "))
+  
+  p <- ggplot(dataframe, aes_string(x = yaxis))
+       p <- p + geom_histogram(aes_string(fill = treatment_sep_a), position = "dodge")
+       p <- p + xlab(axis_label)
+       #p <- p + scale_colour_manual(values = c("red", "blue"), guide=FALSE)
+       #p <- p + scale_fill_manual(values = c("red", "blue"))
+       p <- p + facets
+       p <- p + theme_bw()
+       
+  return(p) 
 }

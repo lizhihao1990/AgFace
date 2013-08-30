@@ -7,7 +7,7 @@ require(plyr)
 require(reshape)
 
 # set working directory
-setwd("~/AgFace/2007")
+setwd("~/AgFace/2007_2009")
 
 # df <- read.xlsx("Markus_2007-2009_22Aug2013.xlsx",
 #                 sheetName = "Sheet1")
@@ -131,9 +131,6 @@ DC30d <- cbind(DC30, dummy)
 # merge the data from DC30d and DC65d
 DC3065 <- merge(DC30d, DC65d, all = TRUE)
 
-write.table(DC3065, file = "out.csv", row.names = FALSE, sep = ",")
-
-
 # DC90 names that are not in DC3065
 add.names <- names(DC90)[!(names(DC90) %in% names(DC3065))]
 
@@ -205,10 +202,12 @@ DCall$Cultivar <- gsub("YitpiN0", "Yitpi", DCall$Cultivar)
 # grab the Nitrogen information as well!!
 DCall$Nitrogen <- "N0"
 DCall$Nitrogen[grep("N0", DCall$CO2.TOS.Irr.Cultivar.DATABASE)] <- "N0"
-DCall$Nitrogen[grep("N+", DCall$CO2.TOS.Irr.Cultivar.DATABASE)] <- "N+"
+DCall$Nitrogen[grep("N\\+", DCall$CO2.TOS.Irr.Cultivar.DATABASE)] <- "N+"
 
 DCall[, c("Cultivar", "CO2", "TOS", "Irrigation", "Nitrogen")] <- lapply(DCall[, c("Cultivar", "CO2", "TOS", "Irrigation", "Nitrogen")], as.factor)
 
+# Re-order Nitrogen_treatment, as N0 should be sorted before N+
+DCall$Nitrogen <- factor(DCall$Nitrogen, levels = c("N0", "N+"))
 
 # Re-arrange the treatment columns
 DCall <- DCall[, c(1:6, 83:86, 7:82)]
@@ -220,4 +219,4 @@ write.table(DCall,
             sep = ",",
             na = "")
 
-save.image("Plant_Production_2007_2009_Glenn_Aug23_2013.RData", compress = TRUE)
+save.image("../Plant_Production/Plant_Production_2007_2009_Glenn_Aug23_2013.RData", compress = TRUE)
