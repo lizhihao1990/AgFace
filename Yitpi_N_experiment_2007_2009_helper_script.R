@@ -19,7 +19,8 @@ MyBoxplot <- function(dataframe,
   # http://r.789695.n4.nabble.com/ggplot2-proper-use-of-facet-grid-inside-a-function-td906018.html
   # facets <- facet_grid(paste(facet_var_a, "~ ."))
   #facets <- facet_grid(paste(facet_var_a, facet_var_b, sep = " ~ "))
-  facets <- facet_grid(paste(facet_var_a, facet_var_b, sep = " ~ "))
+  facets <- facet_grid(paste(facet_var_a, facet_var_b, sep = " ~ "), scales = "free_y")
+
   
   if (nrow(dataframe) != missing_data ) {
   p <- ggplot(dataframe, aes_string(x = xaxis, y = yaxis))
