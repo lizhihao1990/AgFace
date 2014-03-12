@@ -244,20 +244,14 @@ yitpi.rel <- rel.response[, -c(4, 14)]
 
 # re-ordering the Environemnts based on maximum relative difference
 # Glenn 13/09/2013: I'd like them ordered by relative yield response rather than absolute yield so we can compare these data sets quickly. 
+Rel.Ord.Env <- ddply(rel.response[rel.response$variable == "Yield..g.m2._rel_diff_to_aCO2",],
+              .(Ord.Environment),
+              summarise,
+              mean_rel_yield = mean(value, na.rm = TRUE))
 
-# This section was taken out on Sept 30. Email Glenn:
-#I was wondering if you could plot the relative data in the order of the absolute yield data? 
-
-#----------------------------------------------------------
-#Rel.Ord.Env <- ddply(rel.response[rel.response$variable == "Yield..g.m2._rel_diff_to_aCO2",],
-#              .(Ord.Environment),
-#              summarise,
-#              mean_rel_yield = mean(value, na.rm = TRUE))
-
-#rel.response$Ord.Environment <- factor(rel.response$Ord.Environment,
-#                             levels = Rel.Ord.Env$Ord.Environment[order(Rel.Ord.Env$mean_rel_yield)],
-#                             ordered = TRUE)
-#----------------------------------------------------------
+rel.response$Ord.Environment <- factor(rel.response$Ord.Environment,
+                             levels = Rel.Ord.Env$Ord.Environment[order(Rel.Ord.Env$mean_rel_yield)],
+                             ordered = TRUE)
 
 ## rel response results table
 #yitpi.rel <- cast(rel.response, 

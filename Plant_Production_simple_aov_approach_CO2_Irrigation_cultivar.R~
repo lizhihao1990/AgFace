@@ -1,7 +1,10 @@
+# Anova config CO2xIrrigationxCultivar
+# TOS1 only!
+
 # Wheat in different environments
 # integration of Horsham and Walpeup data
 
-# looking into responses of Yitpi in different environments
+# looking into responses of Yitpi and Janz in different environments
 
 # based on scripts 
 # "Plant_Production_2007_2009.R" and
@@ -11,10 +14,10 @@
 # based on script "Plant_Production_import_new_file_from_Glenn_2007-2009.R" only!
 
 # set the working directory within the Plant Production folder
-setwd("~/AgFace/Plant_Production/Environment_comparison")
+setwd("~/AgFace/Plant_Production/Environment_comparison/CO2xIrrigationxCultivar")
 
 # load exisiting workspaces
-load("../Plant_Production_2007_2009_Glenn_Aug23_2013.RData")
+load("../../Plant_Production_2007_2009_Glenn_Feb10_2014.RData")
 
 # get rid of the objects from the workspace we don't need
 to_keep <- c("DCall")
@@ -29,38 +32,73 @@ source("~/AgFace/R_scripts/Yitpi_N_experiment_2007_2009_helper_script.R")
 
 
 # only keep rainfed Yitpi N0 in this comparison
-yitpi <- DCall[DCall$Cultivar == "Yitpi" &
-               DCall$Nitrogen == "N0", ]
+yj <- DCall[(DCall$Cultivar == "Yitpi" & DCall$Nitrogen == "N0") | 
+             DCall$Cultivar == "Janz", ]
+
+# Additionally, select treatments here
+# yj <- yj[yj$TOS == "TOS1", ]
+
+# select parameters to be analysed
+#Emergence/m2
+#Biomass (g)
+#Plant wt (g)
+#Plants/m2
+#Tillers/m2
+#Tillers/plant
+#Heads/m2
+#Heads/plant
+#1000 Grain Wt (g)
+#Grains/m2
+#Grains/plant
+#Grains/tiller
+#Grains/head
+#Screenings (<2mm) (%)
+#Harvest Index
+#Yield (g/m2)
+#Milling Yield (%)
+
+#Spikelets per head
+#Spikelet wt (g)
+
+#Grains per spikelet (= Seeds per floret)
+
+# parameters_to_keep <- c("Emergence.Plants.m2", "AR.Dry.wt.area..g.m2.", "Plant.wt..g.plant.", "Plants.m2..Quadrat.", "Tillers.m2..Quadrat.", "Tillers.plant..Quadrat.", "Heads.m2..Quadrat.SS.", "Heads.plant..Quadrat.", "1000.Grain.Wt..g.", "Grains.m2", "Grains.plant..quadrat.", "Grains.tiller..quadrat.", "Grains.head..quadrat.", "Screenings...2mm.....", "Harvest.Index..AR.", "Yield..g.m2.", "Milling.Yield....", "Spikelets.head", "Spikelet.wt..g.", "Seeds.floret")
+
+parameters_to_keep <- c("Spikelets.head", "Spikelet.wt..g.", "Crop.Height..cm.", "Emergence.Plants.m2", "AR.Dry.wt.area..g.m2.", "Plant.wt..g.plant.", "Tiller.wt..g.tiller.",  "Plants.m2..Quadrat.", "Tillers.m2..Quadrat.", "1000.Grain.Wt..g.", "Grains.m2", "Grains.plant..quadrat.", "Seeds.floret")
+
+# For now, we keep all parameters until all are definitively identified
+names(yj)[grep("Dry", names(yj))]
+
 
 # create Environment variable               
-yitpi$Environment <- interaction(yitpi$TrialID,
-                                 yitpi$Year, 
-                                 yitpi$Irrigation,
-                                 yitpi$TOS,
-                                 drop = TRUE)
+yj$Environment <- interaction(yj$TrialID,
+                              yj$Year, 
+                              yj$Irrigation,
+                              yj$TOS,
+                              drop = TRUE)
 
 # sort Environment by increasing Grain yield in aCO2
 # Michael: I would group the environments according to their grain yield under aCO2 on the x axis. This should show us already lots!
 
-Ord.Env <- ddply(yitpi[yitpi$CO2 == "aCO2", ],
+Ord.Env <- ddply(yj[yj$CO2 == "aCO2", ],
               .(Environment),
               summarise,
               mean_yield = mean(Yield..g.m2., na.rm = TRUE))
 
-yitpi$Ord.Environment <- factor(yitpi$Environment,
+yj$Ord.Environment <- factor(yj$Environment,
                              levels = Ord.Env$Environment[order(Ord.Env$mean_yield)],
                              ordered = TRUE)
 
 # re-organise the data frame, all descriptors in front
-yitpi <- yitpi[, c(1:10, 87:88, 11:86)]
+yj <- yj[, c(1:17, 98:99, 18:97)]
 
 
 # create the long format of the data
-yitpi.melt <- melt(yitpi,
-                id = names(yitpi)[1:12])
+yj.melt <- melt(yj,
+                id = names(yj)[1:19])
 
-yitpi.sum <- cast(yitpi.melt, 
-             CO2 + Stage + Ord.Environment ~ variable, 
+yj.sum <- cast(yj.melt, 
+             TrialID + TOS + CO2 + Stage + Year + Cultivar ~ variable, 
              c(function(x) mean(x, na.rm = TRUE),
                function(x) sd(x, na.rm = TRUE),
                function(x) sum(!is.na(x))),
@@ -69,34 +107,37 @@ yitpi.sum <- cast(yitpi.melt,
 
 
 # names get tangled up when using custom functions with "cast"
-names(yitpi.sum) <- gsub("_function.x..mean.x..na.rm...TRUE.", "_Mean", names(yitpi.sum))
-names(yitpi.sum) <- gsub("_function.x..sd.x..na.rm...TRUE.", "_SD", names(yitpi.sum))
-names(yitpi.sum) <- gsub("_function.x..sum..is.na.x..", "_No_samples", names(yitpi.sum))
+names(yj.sum) <- gsub("_function.x..mean.x..na.rm...TRUE.", "_Mean", names(yj.sum))
+names(yj.sum) <- gsub("_function.x..sd.x..na.rm...TRUE.", "_SD", names(yj.sum))
+names(yj.sum) <- gsub("_function.x..sum..is.na.x..", "_No_samples", names(yj.sum))
 
-write.table(yitpi.sum,
-            file = "Yitpi_plant_production_summary_per_environment.csv",
+write.table(yj.sum[yj.sum$variable %in% parameters_to_keep, ],
+            file = "Yitpi_Janz_plant_production_summary_per_year.csv",
             row.names = FALSE,
             na = "",
             sep = ",")
 
 
-# Boxplots in a loop for YitpiN0 only
-my.boxplots <- dlply(yitpi.melt,
-                  .(variable),
+# Boxplots in a loop for Janz and YitpiN0 only
+my.boxplots <- dlply(yj.melt[yj.melt$variable %in% parameters_to_keep, ],
+#my.boxplots <- dlply(yj.melt,
+                  .(Year, variable),
                   function(x) {
                   MyBoxplot(dataframe = x, 
                             label     = x$variable, 
-                            xaxis = "Ord.Environment", 
+                            xaxis = "Cultivar", 
                             yaxis = "value", 
                             treatment_sep_a = "CO2", 
-                            treatment_sep_b = NA, 
+                            treatment_sep_b = "TrialID", 
                             facet_var_a = "Stage", 
-                            facet_var_b = ".",
-                            two_separators = FALSE)})
+                            facet_var_b = "Irrigation",
+                            two_separators = TRUE,
+                            the_x_label = "Cultivar",
+                            the_main_title = unique(x$Year))})
 
 # orig line: MyBoxplot(x, x$variable, "Ord.Environment", "value", "CO2", "CO2", "Stage", ".")})
 
-pdf("Horsham_Walpeup_Environments_boxplots_new_file_from_Glenn_free_y.pdf")
+pdf("CO2xIrrigationxCultivar_boxplots_Yipti_Janz_Feb10_free_y_simple.pdf")
         print(my.boxplots)
 dev.off()
 
@@ -222,8 +263,8 @@ CalcPercent <- function(data, separator, value, reference) {
 ## CalcPercent(mydata, "CO2_treat", "myvalue", "aCO2")
 
 # Calculate the relative response to eCO2 for each variable, stage and environment.
-rel.response <- ddply(yitpi.melt,
-                     .(variable, Stage, Ord.Environment),
+rel.response <- ddply(yj.melt,
+                     .(Irrigation, Year, Irrigation, variable, Stage),
                      function(x)
                      CalcPercent(x, "CO2", "value", "aCO2"))
 
@@ -231,8 +272,9 @@ rel.response <- ddply(yitpi.melt,
 rel.response$variable <- gsub("$", "_rel_diff_to_aCO2", rel.response$variable)
 
 # extract the mean data
-yitpi.rel <- rel.response[, -c(4, 14)]
-
+# not needed any more
+# yj.rel <- rel.response[, -c(4, 16)]
+yj.rel <- rel.response
 
 
 # checking the yield data
@@ -274,54 +316,65 @@ yitpi.rel <- rel.response[, -c(4, 14)]
 #names(yitpi.rel) <- gsub("_function.x..sd.x..na.rm...TRUE.", "_SD", names(yitpi.rel))
 #names(yitpi.rel) <- gsub("_function.x..sum..is.na.x..", "_No_samples", names(yitpi.rel))
 
-names(yitpi.rel)[which(names(yitpi.rel) == "variable")] <- "parameter"
+names(yj.rel)[which(names(yj.rel) == "variable")] <- "parameter"
 # melt the table with the relative SD data
-yitpi.rel.melt <- melt(yitpi.rel,
-                       id = names(yitpi.rel)[1:12])
+yj.rel.melt <- melt(yj.rel,
+                    id = names(yj.rel)[1:20])
 
-yitpi.rel.cast <- cast(yitpi.rel.melt,
-                       CO2 + Stage + Ord.Environment ~ parameter + variable)
+yj.rel.cast <- cast(yj.rel.melt,
+                    Irrigation + Year + CO2 + Stage + Cultivar ~ parameter + variable,
+                    fun = mean)
 
-write.table(yitpi.rel.cast,
-            file = "Yitpi_plant_production_relative_difference_per_environment_relSD.csv",
+#write.table(yj.rel.cast,
+write.table(yj.rel.cast[yj.rel.cast$variable %in% parameters_to_keep, ],
+            file = "Yitpi_Janz_plant_production_relative_difference_per_environment_relSD.csv",
             row.names = FALSE,
             na = "",
             sep = ",")
 
+
 # Boxplots in a loop for relative response data
-my.boxplots <- dlply(rel.response,
-                  .(variable),
+#my.boxplots <- dlply(rel.response,
+my.boxplots <- dlply(rel.response[rel.response$variable %in% parameters_to_keep, ],
+                  .(TrialID, Year, variable),
                   function(x) {
                   MyBoxplot(dataframe = x, 
                             label     = x$variable, 
-                            xaxis = "Ord.Environment", 
+                            xaxis = "Cultivar", 
                             yaxis = "value", 
                             treatment_sep_a = "CO2", 
-                            treatment_sep_b = NA, 
+                            treatment_sep_b = "", 
                             facet_var_a = "Stage", 
-                            facet_var_b = ".",
-                            two_separators = FALSE)})
+                            facet_var_b = "Irrigation",
+                            two_separators = FALSE,
+                            the_x_label = "Cultivar")})
 
-pdf("Horsham_Walpeup_Environments_boxplots_relative_response_free_y.pdf")
-        print(my.boxplots)
-dev.off()
+#pdf("Horsham_Walpeup_boxplots_Yipti_Janz_relative_response_free_y_simple_aov.pdf")
+#        print(my.boxplots)
+#dev.off()
 
 
 # Statistical tests
+# To be true to the analysis we should do the following:
+# 1) Perform an AOV on each year*location individually (eg, Horsham 2007, Walpeup 2008) with CO2, TOS, irrigation and cultivar
+# 2) Do an exploratory analysis of the results from (1) to determine if TOS is significant and look at interactions.  Based on previous analyses, there are very few interactions and TOS
+# appears to be significant in almost all cases for the data analysed here, except probably for HI.
+# 3) Most likely, for most variables, we will analyse TOS separately since it will probably be highly significant and in any case fits the view that this is a very different environment and
+#should be analysed separately.
 
 # checking assumptions for ANOVA
-shap.out <- shapiro.test(yitpi$Yield..g.m2.)
+shap.out <- shapiro.test(yj$Yield..g.m2.)
 shap.out$p.value
 
-lev.out <- leveneTest(Yield..g.m2. ~ CO2 * Environment, 
-                      data = yitpi)
+lev.out <- leveneTest(Yield..g.m2. ~ CO2 * Irrigation * Cultivar, 
+                      data = yj)
 lev.out$`Pr(>F)`[1]
 # Check all parameters for normality
-levene.out <- dlply(yitpi.melt,
-                   .(variable, Stage),
+levene.out <- dlply(yj.melt,
+                   .(TrialID, Year, variable, Stage),
                    function(x) {
                  
-                 out <- try(leveneTest(value ~ CO2 * Environment,
+                 out <- try(leveneTest(value ~ CO2 * Irrigation * Cultivar,
                                     data = x))
                     
                  if (inherits(out, "try-error")) {
@@ -338,15 +391,15 @@ sink()
 ## When the sample size is small, even big departures from normality are not detected, and when your sample size is large, even the smallest deviation from normality will lead to a rejected null.
 
 # Check the sample size
-n_size.out <- ddply(yitpi.melt,
-                   .(variable, Stage),
+n_size.out <- ddply(yj.melt,
+                   .(TrialID, Year, Irrigation, variable, Stage),
                    summarise,
                    n = sum(!is.na(value)))
 
 # Test for normality of the underlying population
 
-shapiro.out <- ddply(yitpi.melt,
-                   .(variable, Stage),
+shapiro.out <- ddply(yj.melt,
+                   .(TrialID, Year, variable, Stage),
                    function(x) {
                  
                  out <- try(shapiro.test(x$value))
@@ -364,11 +417,11 @@ shapiro.out <- ddply(yitpi.melt,
 sample_and_shapiro <- merge(n_size.out, shapiro.out)
 
 # Extract the levene result for each parameter
-levene.out <- ddply(yitpi.melt,
-                   .(variable, Stage),
+levene.out <- ddply(yj.melt,
+                   .(TrialID, Year, variable, Stage),
                    function(x) {
                  
-                 out <- try(leveneTest(value ~ CO2 * Environment,
+                 out <- try(leveneTest(value ~ CO2 * Irrigation * Cultivar,
                                     data = x))
                     
                  if (inherits(out, "try-error")) {
@@ -422,47 +475,47 @@ to_transform <- to_transform[, c("variable", "Stage")]
 nrow(to_transform)
 length(sort(unique(interaction(to_transform$variable, to_transform$Stage, drop = TRUE))))
 
-yitpi.to_transform <- yitpi.melt[
-                  interaction(yitpi.melt$variable, yitpi.melt$Stage) %in% 
+yj.to_transform <- yj.melt[
+                  interaction(yj.melt$variable, yj.melt$Stage) %in% 
                   interaction(to_transform$variable, to_transform$Stage), ]
 
-length(sort(unique(interaction(yitpi.to_transfrom$variable, 
-                               yitpi.to_transfrom$Stage, drop = TRUE))))
+length(sort(unique(interaction(yj.to_transform$variable, 
+                               yj.to_transform$Stage, drop = TRUE))))
 
 # the "good" data that do not need transformation
-yitpi.no_transform <- yitpi.melt[!
-                  interaction(yitpi.melt$variable, yitpi.melt$Stage) %in% 
+yj.no_transform <- yj.melt[!
+                  interaction(yj.melt$variable, yj.melt$Stage) %in% 
                   interaction(to_transform$variable, to_transform$Stage), ]
 
 
 # calling Myhist function from helper script
-myhist <- MyHist(yitpi.test, 
-       label = yitpi.test$variable,
-       yaxis = "value",
-       treatment_sep_a = "CO2",
-       treatment_sep_b = NA,
-       facet_var_a = "Stage",
-       facet_var_b = ".")
-myhist
+#myhist <- MyHist(yj.test, 
+#       label = yj.test$variable,
+#       yaxis = "value",
+#       treatment_sep_a = "CO2",
+#       treatment_sep_b = "TOS",
+#       facet_var_a = "Stage",
+#       facet_var_b = "Cultivar")
+#myhist
 
 # Boxplots in a loop for YitpiN0 only
-my.hist <- dlply(yitpi.to_transform,
+my.hist <- dlply(yj.to_transform,
                   .(variable),
                   function(x) {
                   MyHist(dataframe = x, 
                          label     = x$variable,
                          yaxis = "value", 
                          treatment_sep_a = "CO2", 
-                         treatment_sep_b = NA, 
-                         facet_var_a = "Ord.Environment", 
+                         treatment_sep_b = "Cultivar", 
+                         facet_var_a = "Irrigation", 
                          facet_var_b = "Stage"
                          )})
 
 # orig line: MyBoxplot(x, x$variable, "Ord.Environment", "value", "CO2", "CO2", "Stage", ".")})
 
-pdf("Horsham_Walpeup_Histograms_for_non_homogeneous_paras.pdf")
-        print(my.hist)
-dev.off()
+#pdf("Horsham_Walpeup_Histograms_for_non_homogeneous_paras.pdf")
+#        print(my.hist)
+#dev.off()
 
 
 
@@ -478,8 +531,8 @@ mydata$N <- as.factor(mydata$N)
 # mydata
 
 # extract a small test-parameter from yitpi.to_transform to test the boxcoc-Transformation
-yitpi.test <- yitpi.to_transform[yitpi.to_transform$variable == "Yield..g.m2.", ]
-yitpi.test <- yitpi.to_transform[yitpi.to_transform$variable == "Plant.wt..g.plant.", ]
+yj.test <- yj.to_transform[yj.to_transform$variable == "Yield..g.m2.", ]
+yj.test <- yj.to_transform[yj.to_transform$variable == "Plant.wt..g.plant.", ]
 # hist(yitpi.test$value)
 
 # Transformation function that uses box-cox to transform and uses leveneTest to check homogeneity of variances
@@ -535,21 +588,21 @@ source("~/AgFace/R_scripts/BoxCox_transformation.R")
 
 #out <- BoxcoxTrans(data = mydata, value = mydata$myvalue, fac1 = mydata$CO2_treat, fac2 = mydata$N)
 
-out <- BoxcoxTrans(yitpi.test, yitpi.test$value, yitpi.test$CO2, yitpi.test$Environment)
+out <- BoxcoxTrans(yj.test, yj.test$value, yj.test$CO2, yj.test$Irrigation, yj$Cultivar)
 
 # data frame with the transformed data
-yitpi.transformed  <- ddply(yitpi.to_transform,
-                    .(variable, Stage),
+yj.transformed  <- ddply(yj.to_transform,
+                    .(TrialID, Year, variable, Stage),
                     function(x){
-                    BoxcoxTrans(x, x$value, x$CO2, x$Environment)
+                    BoxcoxTrans(x, x$value, x$CO2, x$Irrigation, x$Cultivar)
                     })
 
 # checking the success of the transformtaion
-after.tests <- ddply(yitpi.transformed,
-                   .(variable, Stage),
+after.tests <- ddply(yj.transformed,
+                   .(TrialID, Year, variable, Stage),
                    function(x) {
                  
-                 out <- try(leveneTest(trans_value ~ CO2 * Environment,
+                 out <- try(leveneTest(trans_value ~ CO2 * Irrigation * Cultivar,
                                     data = x))
                     
                  if (inherits(out, "try-error")) {
@@ -572,8 +625,8 @@ write.table(after.tests,
 
 # Put the transformed and non-transformed data back together
 # Add a column to the non-transformed data to match the format of the transformed data frame. This column is a copy of the orginal values.
-yitpi.no_transform$trans_value <- yitpi.no_transform$value
-yitpi.all_transformed <- rbind(yitpi.no_transform, yitpi.transformed)
+yj.no_transform$trans_value <- yj.no_transform$value
+yj.all_transformed <- rbind(yj.no_transform, yj.transformed)
 
 bad.paras <- interaction(after.tests$variable[after.tests$Leve_fail == TRUE],
                          after.tests$Stage[after.tests$Leve_fail == TRUE])
@@ -584,18 +637,19 @@ write.table(bad.paras,
             row.names = FALSE,
             col.names = FALSE)
             
-yitpi.all_transformed$inter <- interaction(yitpi.all_transformed$variable,
-                                           yitpi.all_transformed$Stage)
+yj.all_transformed$inter <- interaction(yj.all_transformed$variable,
+                                        yj.all_transformed$Stage)
 
-yitpi.homogeneous <- yitpi.all_transformed[!(yitpi.all_transformed$inter %in% bad.paras), ]
+yj.homogeneous <- yj.all_transformed[!(yj.all_transformed$inter %in% bad.paras), ]
 
 # Run an anova
 # run the analysis on all cases for YitpiN0
-aov.out <- dlply(yitpi.homogeneous,
-                 .(variable, Stage),
+#aov.out <- dlply(yj.homogeneous,
+aov.out <- dlply(yj.homogeneous[yj.homogeneous$variable %in% parameters_to_keep, ],
+                 .(TrialID, Year, variable, Stage),
                  function(x) {
                  
-                 out <- try(summary(aov(trans_value ~ CO2 * Environment,
+                 out <- try(summary(aov(trans_value ~ CO2 * Irrigation * Cultivar,
                                     data = x,
                                     na.action = na.omit)))
                     
@@ -606,6 +660,66 @@ aov.out <- dlply(yitpi.homogeneous,
                       print("successful fit")
                       aov.out <- out}
                  })
-sink("Horsham_Walpeup_Anova_results_after_transformation.txt")
+sink("CO2xIrrigationxCultivar_TOS1_Anova_results_after_transformation.txt")
         print(aov.out)
 sink()
+
+my.aov <- aov(trans_value ~ CO2 * Irrigation * Cultivar,
+         data = yj.homogeneous[yj.homogeneous$variable == "Emergence.Plants.m2",])
+summary(my.aov)
+str(summary(my.aov))
+summary(my.aov)[[1]][["Pr(>F)"]]
+
+# aov.details.out <- ddply(yj.homogeneous,
+aov.details.out <- ddply(yj.homogeneous[yj.homogeneous$variable %in% parameters_to_keep, ], 
+                 .(TrialID, Year, variable, Stage),
+                 function(x) {
+                 
+                 out <- try(aov(
+                       trans_value ~ CO2 * Irrigation * Cultivar,
+                                    data = x,
+                                    na.action = na.omit))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      aov.out <- c(rep(NA, 7))
+                      return(aov.out)} 
+                 else {
+                      print("successful fit")
+                      my.terms <- rownames(summary(out)[[1]])[1:7]
+                      aov.out <- summary(out)[[1]][["Pr(>F)"]][1:7]
+                      names(aov.out) <- my.terms
+                      return(aov.out)
+                      }
+                 })
+names(aov.details.out) <- gsub(" ", "", names(aov.details.out))
+
+aov.details.out.melt <- melt(aov.details.out,
+                             id = names(aov.details.out)[1:4])
+
+names(aov.details.out.melt)[3] <- "Parameter"
+# visualise the anovas
+# all parameters
+aov.res <- aov.details.out.melt[aov.details.out.melt$value <= 0.05 & 
+                                !is.na(aov.details.out.melt$value),]
+
+p <- ggplot(aov.res, aes(x = variable, y = Parameter))
+  p <- p + geom_point(aes(colour = value, shape =TrialID), 
+                      size = 5)
+  p <- p + scale_colour_gradient(low = "green", high = "red", name = "p-value")
+  p <- p + facet_grid(Stage ~ Year)
+  p <- p + labs(x = "ANOVA Factor")
+  p <- p + theme_bw()
+  p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 0))
+p
+
+ggsave(file = "CO2xIrrigationxCultivar_ANOVA_overview.pdf", height = 25, width = 16)
+
+dim(aov.res[aov.res$variable == "CO2:Cultivar", ])
+
+walpeup <- yj.homogeneous[yj.homogeneous$TrialID == "Walpeup",]
+
+my.aov <- aov(trans_value ~ CO2 * Irrigation * Cultivar,
+         data = yj.homogeneous[yj.homogeneous$variable == "Emergence.Plants.m2" &
+                               yj.homogeneous$TrialID == "Walpeup",])
+

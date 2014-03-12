@@ -1,0 +1,27 @@
+Leaf spectra report
+===================
+
+```{r setup, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+opts_chunk$set(cache=FALSE)
+opts_chunk$set(dev = 'pdf', tidy = TRUE)
+opts_chunk$set(fig.width = 7, fig.height = 5, dpi = 144, fig.pos="H")
+library(scales)
+library(ggplot2)
+library(reshape)
+library(xtable)
+library(plyr)
+```
+
+Methods
+-------
+
+Each leaf is placed in the leaf clip of the FieldSpec Pro (ASD instruments). First, a transmission spectrum from 350 to 2500 nm is measured of the leaf. The leaf is placed in fornt the white plate of the leaf clip . Then the same leaf is measured again in front of a black plate to get reflectance. The instrument was optimised based on the white reference plate. The same reference plate was used in the transmission measurements.
+
+The reflectance and transmission spectra are normalised individually to be in the range of 0 to 1.
+Leaf absorptivity is calculated from the normalised spectra asd
+
+Abs = Reflectance - Transmission
+
+The examples below show the results from a single leaf. This is just to clarify the actual data analysis process. There are no scientific results yet!
+
+

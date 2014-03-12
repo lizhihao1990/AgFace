@@ -2,6 +2,19 @@
 # based on the revised Plant Production file sent by Glenn on August 22, 2013
 # new file sent on Oct 24.
 
+# Next version of the Plant Production file from Glenn, February 10, 2014:
+
+#As I mentioned here in an updated (final!) data set for AOV analysis.  You can copy and paste the data into your template and run as is. 
+
+#Here is what I did: 
+#As before, please analyzed just the columns for DC90 that are in bold and the two columns in DC65 (spikelets/head, spikelet wt).  I added two more variables for analysis:  DC65 crop height and DC90 g/tiller (they are in blue).  The changes I made are in red.  If text is red then this is different from the previous data set.  If the entire cell is red this is because I have removed the data and it is to be treated as missing for the purposes of analysis.  Column names in red mean I have changed the names from the previous analysis. 
+
+#Call or email if you have questions.  As before, please produce box plots, AOV and means tables. 
+
+#Thanks, 
+#Glenn 
+
+
 # require(xlsx)
 require(ggplot2)
 require(plyr)
@@ -17,7 +30,14 @@ setwd("~/AgFace/2007_2009")
 #df <- read.csv("Markus_2007-2009_22Aug2013.csv",
 #                header = TRUE)
 
-df <- read.csv("Markus_2007-2009_24Oct2013.csv",
+#df <- read.csv("Markus_2007-2009_24Oct2013.csv",
+#                header = TRUE)
+
+# Yet another new version of the data 
+#df <- read.csv("Markus_2007-2009_Feb2014.csv",
+#                header = TRUE)
+# Yet another another version of the data
+df <- read.csv("Markus_2007-2009_14Feb2014.csv",
                 header = TRUE)
 
 
@@ -36,15 +56,32 @@ df <- df[, -X.names]
 # one left-over "X" column
 df$X <- NULL
 
-# getting rid of the unnecessary columns
+# getting rid of the unnecessary columns - one by one
 df$Crop <- NULL
 df$NA.  <- NULL
 df$Bay  <- NULL
 df$Bay.1  <- NULL
 df$CO2.TOS.Irr.Cultivar.DATABASE.1 <- NULL
-df$RingID.1 <- NULL
+df$CO2.TOS.Irr.Cultivar.DATABASE.2 <- NULL
+df$CO2.TOS.Irr.Cultivar.DATABASE.3 <- NULL
 df$CO2.TOS.Irr.Cultivar.DATABASE.4 <- NULL
+df$RingID.1 <- NULL
+df$RingID.2 <- NULL
+df$RingID.3 <- NULL
+df$RingID.3 <- NULL
 df$RingID.4 <- NULL
+df$RingTrt.1 <- NULL
+df$RingTrt.2 <- NULL
+df$HalfRingID.1 <- NULL
+df$HalfRingID.2 <- NULL
+
+# remove additional columns - getting sick of individual removel
+to_remove <- c("Plot.Order.1", "TrialID.1", "Year.1",  "PlotID.1",  "CO2.1", "Irrigation.1", 
+"TOS.1", "PlotTrt.1", "Sampling.1", "Cultivar.1", "Stage.1", "TrialName.1", "Plot.Order.2", "TrialID.2", "Year.2", "PlotID.2", "CO2.2", "Irrigation.2", "TOS.2", "PlotTrt.2", "Sampling.2", "Cultivar.2", "Stage.2", "TrialName.2")
+to_remove <- unlist(lapply(to_remove, function(x) {grep(x, names(df))}))
+
+# get rid of the specified columns
+df <- df[, -to_remove]
 
 # Email from Glenn regarding problems in the data file
 
@@ -75,16 +112,16 @@ df$RingID.4 <- NULL
 
 DC30 <- df[, c(1:55)]
 DC30$Stage <- as.factor("DC30")
-DC30 <- DC30[, -c(1, 6:13, 16)]
+#DC30 <- DC30[, -c(1, 6:13, 16)]
 
 
-DC65 <- df[, 56:112]
-DC65$Stage.1 <- as.factor("DC65")
-DC65 <- DC65[, -c(1, 6:13, 16)]
+DC65 <- df[, c(1:16, 56:96)]
+DC65$Stage <- as.factor("DC65")
+#DC65 <- DC65[, -c(1, 6:13, 16)]
 
-DC90 <- df[, 113:ncol(df)]
-DC90$Stage.2 <- as.factor("DC90")
-DC90 <- DC90[, -c(1, 6:13, 16)]
+DC90 <- df[, c(1:16, 97:ncol(df))]
+DC90$Stage <- as.factor("DC90")
+#DC90 <- DC90[, -c(1, 6:13, 16)]
 
 
 # Duplicate treatment descriptors
@@ -104,7 +141,6 @@ names(DC65) <- gsub("^DC65.", "", names(DC65))
 names(DC90) <- gsub("^DC90.", "", names(DC90))
 
 
-
 # DC30 names that are not in DC65
 add.names <- names(DC30)[!(names(DC30) %in% names(DC65))]
 
@@ -118,7 +154,6 @@ dummy <- as.data.frame(matrix(nrow = rows, ncol = columns))
 names(dummy) <- add.names
 
 DC65d <- cbind(DC65, dummy)
-
 
 # DC65 names that are not in DC30
 add.names <- names(DC65)[!(names(DC65) %in% names(DC30))]
@@ -215,7 +250,7 @@ DCall[, c("Cultivar", "CO2", "TOS", "Irrigation", "Nitrogen")] <- lapply(DCall[,
 DCall$Nitrogen <- factor(DCall$Nitrogen, levels = c("N0", "N+"))
 
 # Re-arrange the treatment columns
-DCall <- DCall[, c(1:6, 84:87, 7:83)]
+DCall <- DCall[, c(1:10, 97, 11:96)]
 
 # export to csv
 write.table(DCall,
@@ -224,4 +259,4 @@ write.table(DCall,
             sep = ",",
             na = "")
 
-save.image("../Plant_Production/Plant_Production_2007_2009_Glenn_Oct24_2013.RData", compress = TRUE)
+save.image("../Plant_Production/Plant_Production_2007_2009_Glenn_Feb10_2014.RData", compress = TRUE)

@@ -10,8 +10,7 @@ MyBoxplot <- function(dataframe,
                       facet_var_a,
                       facet_var_b,
                       two_separators,
-                      the_x_label = "Environment cases ordered by increasing yield",
-                      the_main_title = NA) {
+                      the_x_label = "Environment cases ordered by increasing yield") {
 
   require(ggplot2)
   
@@ -39,8 +38,7 @@ MyBoxplot <- function(dataframe,
        # p <- p + facet_wrap(facet_var ~ .)
        p <- p + facets
        # p <- p + facet_grid(scales = "free_y")
-       p <- p + labs(x = the_x_label,
-                     title = the_main_title)
+       p <- p + labs(x = the_x_label)
        p <- p + theme_bw()
        p <- p + theme(axis.text.x = element_text(angle = 90))
        

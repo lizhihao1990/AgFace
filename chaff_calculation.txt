@@ -1,0 +1,24 @@
+in 2012:
+
+Adjusted sub sample Chaff wt. (g)
+=(AS386-AU386)*$AN386
+=( Sub sample Head dry wt (g)  - Sub sample Grain wt (g) ) * Drying correction factor
+
+
+Adjusted Quadrat AR Dry wt (g)
+=AZ386+BD386
+= Adjusted total SS AR dry weight (g) + Adjusted Remainder sample AR Dry wt (g)
+
+in 2011 at DC31:
+Adjusted total SS AR dry weight (g) = 
+Drying correction factor + Sub sample  Green Leaf dry Wt. (g)	+ Sub sample  Dead Leaf dry Wt. (g)	+ Sub sample Tiller dry Wt. (g)	+ Sub sample Pseudostem dry Wt. (g)	Sub sample Head dry Wt. (g)
+
+
+in 2012 at DC31
+Adjusted total SS AR dry weight (g) =
+Sub sample  Green Leaf dry wt (g) + Sub sample  Dead Leaf dry wt (g)	+ Sub sample AR Tiller dry wt (g)
+
+
+missing in 2011:
+Adjusted sub sample Chaff wt. (g) 
+Adjusted Quadrat AR Dry wt (g)

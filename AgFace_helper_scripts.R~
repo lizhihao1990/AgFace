@@ -75,6 +75,7 @@ elevated_rings_2013 <- c(2, 6, 10, 15)
                  is.irrigated <- "Supp"}
               else {
                  is.irrigated <- "Rain"}
+              is.irrigated <- as.factor(is.irrigated)
               names(is.irrigated) <- "Irrigation"
               return(is.irrigated)
 }

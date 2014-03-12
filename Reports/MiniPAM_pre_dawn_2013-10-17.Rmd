@@ -1,0 +1,119 @@
+Results of chlorophyll fluorescence measurements Oct 16, and pre-dawn Oct 17, 2013
+==================================================================================
+
+```{r setup, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+#opts_chunk$set(dev = 'pdf', tidy = TRUE)
+opts_chunk$set(cache=FALSE)
+opts_chunk$set(dev = 'pdf')
+opts_chunk$set(fig.width = 7, fig.height = 5, dpi = 144, fig.pos="H")
+library(ggplot2)
+library(xtable)
+library(plyr)
+#library(pander)
+```
+
+Methods
+--------
+The experiment was conducted on wheat plants (cultivar yitpi) growing under ambient and elevated CO~2~ of the AGFACE experiment. A heat-shock was applied for six hours a day over three days before the light response assessment.
+
+The current status of Photosystem II (PSII) was assessed with a WALZ MiniPAM chlorophyll fluorescence analyser under the prevailing conditions of each plant. The MiniPAM was equipped with the "leaf-clip" that allows to measure current PPFD and current leaf temperature. Care was taken not to alter the "natural" position of the leaf. The leaes used in this study were non-shaded flag leaves. The ambient light levels were fluctating rapidly due to moving clouds and strong winds. This protocol provides two measurements of the PSII operating efficiency (phiPSII). The first phiPSII value, at ambient light levels, indicates the unaltered, steady state level. The second phiPSII value indicates how PSII copes with additional light stress imposed on top of the natural light.
+
+After attaching the leaf-clip, a single, PSII-saturating flash of light was applied to the leaf to determine current phiPSII. Immediately afterwards, the light source of the MiniPAM wa used to deliver high light level to induce some additional load on the photosystem. This high light level (level 10 of teh 12 levels available in the MiniPAM) was applied for 30 seconds. At the end of this high-light exposure, a second saturating flash of light was used to determine changes in phiPSII. The actual high light levels varied depending on the natural light, and were imposed on top of the existing light.
+
+At night time, the rapid light response of Photosystem II (PSII) was measured with a WALZ MiniPAM chlorophyll fluorescence analyser on a flag leaf that would be exposed to full sunlight at daytime. The light response analysis started with the assessment of dark-adapted maximum photosynthetic quantum yield. Then, a series of increasing light levels from 0 to 550 umol photons m-2s-1 were applied to the leaf for 15s each. Immediately at the end of each light level, chlorophyll fluroescence was determined again.
+The light response of electron transport rate and the effective quantum yield PhiPS2 was analysed with the "waiting-in-line" equation (*Ritchie 2008*). This equations assumes that the ETR to reaches a maximum with increasing light, and then a decline at very high light. The first derivative of this equation is used to analyse the light response of PhiPSII.
+The equation is:
+
+ETR = ETR~f~ * k~w~ * PPFD * exp^(1\ -\ k~w~\ *\ PPFD)^ Eq. 1
+
+ETR~f~ (height of the curve) and k~w~ (scaling for width of the curve; maximum ETR is reached at 1/k~w~) describing each light response curve. Both values are derived from the measured data via non-linear least squares regression analysis applied to each individual light response curve.
+
+The sample size was n = 4 plants for each combination of CO2 and heat treatments.
+
+Measurements were conducted pre-dawn on Oct 17, 2013 between 4 and 5:45 am. The plants were in darkness for at least 8.5 hours before measurements.
+
+Results and discussion
+----------------------
+* Day-time steady-state PSII operating efficiency (phiPSII)
+
+At ambient light levels, elevated temperature increases phiPSII (p = 0.008, Fig. 1). There is no difference between CO~2~ treatments. The range of absolute phiPSII values from 0.2 to 0.55 is reasonable for mid-day measurements on a sun-exposed leaf. Under high light, phiPSII drops dramatically to about 0.125. There are no differences between any treatments any more.
+
+
+The phiPS2-drop from ambient to high light levels was analysed using the slope between the first and the second measurement (Fig. 2). The slope is supposeedly independet from the current ambient light levels and allows to analayse the resposne of PSII to high light.
+The start of the each coloured line indicates phiPS2 at ambient light, the end of the line indicates the corresponding phiPS2 under high light. The slopes were not different between the treatments (Table 1).
+
+* F~v~/F~m~, dark-adapted maximum quantum efficiency
+
+The absolute values for F~v~/F~m~ are very high (in the range of 0.8 to 0.84), indicating a generally "relaxed" / "unstressed" PSII (Fig. 2).
+ The slight differences between heat and CO~2~ treatments are not statistically significant.
+
+Statistical analysis of Fv/Fm indicates that PSII can recover from potential heat-stress over night (Table 2). The three days of heat-shock did not induce a low F~v~/F~m~ compared to the ambient temperature. F~v~/F~m~ is not different between the two CO~2~ treatments.
+
+* Rapid light response of electron transport rate
+
+Here, the "waiting-in-line" equation (Eq. 1) was used to model ETR. The ETR scaling factor (ETRf, maximum velocity) was 
+A different approach to modelling the light response might be used later, as pre-dawn light response does not seem to show the expected decline of ETR at high light. This equation might be better suited to analyse day-time light response assessments than pre-dawn
+
+The maximum ETR (ETRf) indicated by the Eq. 1 is lower in aCO~2~ as compared to eCO~2~, and it is lower at ambient temperature compared to elevated temperature (Fig. 2, Table 2).
+The light level at which ETRf was reached (kw) is higher for plants that were subjected to elevated temperature (Fig. 5, Table 3). Please remember that these measurements took place 8 to 12 hours after the heat treatment ended.
+
+Conclusion
+----------
+F~v~/F~m~ does not indicate photodamage due to heat-stress of CO~2~. However, electron transport rate ETR is affected by the heat-stress and to some extent by CO~2~.
+
+
+References
+----------
+Ritchie (2008) Fitting light saturation curves measured using modulated fluorometry. Photosynth Res (2008) 96:201–215
+
+Figures
+-------
+here are the figures
+
+```{r "Daytime_phiPS2", fig.cap="phi~PSII~", echo = FALSE, fig.pos = "H"}
+print(ambient_and_high_phiPS2)
+```
+```{r "phiPS2_slopes", fig.cap="Change of PhiPS2 between ambient and high light", echo = FALSE, fig.pos = "H"}
+print(phiPS2_slopes)
+```
+```{r "Fv/Fm", fig.cap="F~v~/F~m~", echo = FALSE}
+print(FvFm_boxplot)
+```
+```{r "ETR", fig.cap="Rapid light response of electron transport rate (ETR) measured pre-dawn", echo = FALSE}
+print(ETR_light_response)
+```
+```{r "ETRf", fig.cap="Maximum electron transport rate (ETRf)", echo = FALSE}
+print(max_ETR_plot)
+```
+```{r "kw", fig.cap="PPFD of ETRf", echo = FALSE}
+print(kw_plot)
+```
+
+
+
+
+
+Tables
+------
+
+```{r Tables, results = 'asis', echo = FALSE, tab.cap="Tables"}  
+print(xtable(summary(my.slope.aov), 
+        caption = "Two-factor ANOVA for slope of phiPS2 between ambient and high light", 
+        label = "Slope Anova",
+        display = c("s", "d", "f", "f", "f", "f")), 
+include.rownames = TRUE)
+print(xtable(summary(my.ETRf.aov), 
+        caption = "Two-factor ANOVA table for ETRf", 
+        label = "ETRf Anova"), 
+include.rownames = TRUE, floating = TRUE)
+#pander(my.FvFm_aov)
+print(xtable(summary(my.kw.aov), 
+        caption = "Two-factor ANOVA table for kw", 
+        label = "ETRf Anova"), 
+include.rownames = TRUE, floating = TRUE)
+print(xtable(summary(my.FvFm_aov), 
+        caption = "Two-factor ANOVA for maximum dark adapted quantum yield", 
+        label = "Fv/Fm Anova", 
+        display = c("s", "d", "E", "E", "f", "f")), 
+include.rownames = TRUE)
+```

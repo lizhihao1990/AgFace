@@ -215,7 +215,7 @@ DCall[, c("Cultivar", "CO2", "TOS", "Irrigation", "Nitrogen")] <- lapply(DCall[,
 DCall$Nitrogen <- factor(DCall$Nitrogen, levels = c("N0", "N+"))
 
 # Re-arrange the treatment columns
-DCall <- DCall[, c(1:6, 84:87, 7:83)]
+DCall <- DCall[, c(1:6, 83:87, 7:82)]
 
 # export to csv
 write.table(DCall,
