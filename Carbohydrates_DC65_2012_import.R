@@ -64,7 +64,7 @@ ggsave(file = "Carbohydrates_DC65_2012_replicates.pdf", width = 9, height = 7)
 DC65_2012b <- ddply(DC65_2012,
                     .(Cultivar, Year, Ring, Plot, Organ),
                     summarise,
-                    Conc..mg.mg. = mean(Conc..mg.mg.))
+                    Conc..mg.mg. = mean(Conc..mg.mg., na.rm = TRUE))
 
 DC65_2012 <- DC65_2012b
 

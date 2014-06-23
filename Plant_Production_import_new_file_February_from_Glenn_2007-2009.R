@@ -14,6 +14,11 @@
 #Thanks, 
 #Glenn 
 
+# New in May 2014
+# data from 2007 to 2013 became available from Glenn
+# two parameters (Spikelets and Screenings) have been corrected in the new data
+# these corrected parameters are extracted from the 2007 to 2013 data and imported 
+# and merged with the 2007 to 2009 data
 
 # require(xlsx)
 require(ggplot2)
@@ -37,9 +42,15 @@ setwd("~/AgFace/2007_2009")
 #df <- read.csv("Markus_2007-2009_Feb2014.csv",
 #                header = TRUE)
 # Yet another another version of the data
-df <- read.csv("Markus_2007-2009_14Feb2014.csv",
+#df <- read.csv("Markus_2007-2009_14Feb2014.csv",
+#                header = TRUE)
+# Yet yet another version of the data
+df <- read.csv("Markus_2007-2009_20Mar2014.csv",
                 header = TRUE)
 
+# Yet yet another version of the data
+df <- read.csv("Markus_2007-2009_29May2014.csv",
+                header = TRUE)
 
 # get rid of empty rows
 df <- df[!df$CO2.TOS.Irr.Cultivar.DATABASE == "", ]
@@ -109,6 +120,16 @@ df <- df[, -to_remove]
 # col 112: start of DC30
 # only keeping the above mentioned columns
 # all hard-coded! Danger when the original data file changes
+
+# email from GLenn Tue, 25 Mar 2014 12:20:52 +1100
+#Markus, 
+
+#I have advanced my paper a bit more.  I am attaching an updated data set.  The columns ET, EU, EV have changes.  ET and EU just have new names.  Column EV is a new data set (all changes in red).  Could you run the analysis on the data in EV?  CO2XTOSXIrrigationXCultivar for Horsham and CO2XTOS at Walpeup with stats and mean tables. 
+
+#Cheers, 
+
+#Glenn 
+
 
 DC30 <- df[, c(1:55)]
 DC30$Stage <- as.factor("DC30")
@@ -250,7 +271,8 @@ DCall[, c("Cultivar", "CO2", "TOS", "Irrigation", "Nitrogen")] <- lapply(DCall[,
 DCall$Nitrogen <- factor(DCall$Nitrogen, levels = c("N0", "N+"))
 
 # Re-arrange the treatment columns
-DCall <- DCall[, c(1:10, 97, 11:96)]
+DCall <- DCall[, c(1:10, 99, 11:98)]
+
 
 # export to csv
 write.table(DCall,
@@ -259,4 +281,72 @@ write.table(DCall,
             sep = ",",
             na = "")
 
-save.image("../Plant_Production/Plant_Production_2007_2009_Glenn_Feb14_2014.RData", compress = TRUE)
+save.image("../Plant_Production/Plant_Production_2007_2009_Glenn_May29_2014.RData", compress = TRUE)
+
+
+# not needed any more - data corrected in the 2007 to 2009 file
+
+
+# import the newly corrected data from Glenn May 2014
+# merge DCall with the corrected screenlets and screenings data from GLenn May 2014
+load("~/AgFace/2007_2009/Substitute_data_Glenn.RData")
+
+# delete the "wrong" data from DCall
+# keep a copy of the un-altered DCall data frame
+DCall.pre.change <- DCall
+correct_paras <- c("Screenings...2mm.....", "Spikelet.wt..g.")
+to_delete <- names(DCall) %in% correct_paras
+# DCall <- DCall[, !(to_delete)]
+
+# prepare substitute data to match DCall
+substitute_data <- substitute_data[, !(names(substitute_data) %in% c("PlotID.1", "PlotID.2"))]
+names(substitute_data) <- gsub("Ntreat", "Nitrogen", names(substitute_data))
+substitute_data$Crop <- NULL
+substitute_data$RingTrt <- NULL
+substitute_data$PlotTrt <- NULL
+substitute_data$CO2.TOS.Irr.Cultivar.DATABASE <- gsub("_", " ", substitute_data$CO2.TOS.Irr.Cultivar.DATABASE)
+substitute_data$CO2.TOS.Irr.Cultivar.DATABASE <- as.factor(as.character(substitute_data$CO2.TOS.Irr.Cultivar.DATABASE))
+substitute_data$PlotID <- as.factor(as.character(substitute_data$PlotID))
+substitute_data$Stage <- gsub("DC31", "DC30", substitute_data$Stage)
+substitute_data$Stage <- as.factor(substitute_data$Stage)
+substitute_data$Sampling <- NULL
+substitute_data$Plot.Order <- NULL
+substitute_data$HalfRingID[substitute_data$TrialID == "Walpeup"] <- NA
+# re-order N factor levels
+substitute_data$Nitrogen <- factor(substitute_data$Nitrogen, levels = c("N0", "N+"))
+
+# get rid of some DCall data
+DCall$RingTrt <- NULL
+DCall$PlotTrt <- NULL
+DCall$TrialName <- NULL
+DCall$Sampling <- NULL
+DCall$Plot.Order <- NULL
+
+# halfringID data for Walpeup is sometimes wrong and never helpful, removing it
+DCall$HalfRingID[DCall$TrialID == "Walpeup"] <- NA
+
+# merge the data with the 'old' 2007 to 2009 data
+myDCall <- merge(DCall, substitute_data,
+                 all.x = TRUE)
+
+# comparison of the spikelet data
+my.subs <- substitute_data
+names(my.subs) <- gsub("Spikelet.wt..g.", "Spikelet.wt..g.new", names(my.subs))
+my.comp <- merge(DCall, my.subs,
+                 all.x = TRUE,
+                 all.y = TRUE)
+
+write.table(DCall.pre.change, file = "old_data.csv", sep = ",", row.names = FALSE)
+write.table(substitute_data, file = "new_data.csv", sep = ",", row.names = FALSE)
+
+write.table(my.comp, file = "Comparison_old_new.csv", sep = ",", row.names = FALSE)
+
+library(ggplot2)
+p <- ggplot(my.comp, aes(x = Spikelet.wt..g., y = Spikelet.wt..g.new))
+  p <-p + geom_point()
+p
+ggsave(file = "Comparison-old_new_spikelet_data.pdf", width = 7, height = 7)
+
+# compare the amount of available samples
+sum(!is.na(my.comp$Spikelet.wt..g.new))
+sum(!is.na(my.comp$Spikelet.wt..g.))

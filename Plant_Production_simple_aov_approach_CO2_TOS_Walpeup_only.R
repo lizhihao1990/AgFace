@@ -19,7 +19,8 @@
 setwd("~/AgFace/Plant_Production/Environment_comparison/CO2xTOS_Walpeup_only")
 
 # load exisiting workspaces
-load("../../Plant_Production_2007_2009_Glenn_Feb10_2014.RData")
+#load("../../Plant_Production_2007_2009_Glenn_Mar20_2014.RData")
+load("../../Plant_Production_2007_2009_Glenn_May29_2014.RData")
 
 # get rid of the objects from the workspace we don't need
 to_keep <- c("DCall")
@@ -28,6 +29,7 @@ rm(list = ls()[!(ls() %in% to_keep)])
 # load libraries
 require(car)
 require(reshape)
+require(plyr)
 
 # load Yitpi N-experiment helper script for custom Boxplot function
 source("~/AgFace/R_scripts/Yitpi_N_experiment_2007_2009_helper_script.R")
@@ -65,7 +67,10 @@ yj <- yj[yj$Irrigation == "Rain", ]
 
 # parameters_to_keep <- c("Emergence.Plants.m2", "AR.Dry.wt.area..g.m2.", "Plant.wt..g.plant.", "Plants.m2..Quadrat.", "Tillers.m2..Quadrat.", "Tillers.plant..Quadrat.", "Heads.m2..Quadrat.SS.", "Heads.plant..Quadrat.", "1000.Grain.Wt..g.", "Grains.m2", "Grains.plant..quadrat.", "Grains.tiller..quadrat.", "Grains.head..quadrat.", "Screenings...2mm.....", "Harvest.Index..AR.", "Yield..g.m2.", "Milling.Yield....", "Spikelets.head", "Spikelet.wt..g.", "Seeds.floret")
 
-parameters_to_keep <- c("Spikelets.head", "Spikelet.wt..g.", "Crop.Height..cm.", "Emergence.Plants.m2", "AR.Dry.wt.area..g.m2.", "Plant.wt..g.plant.", "Tiller.wt..g.tiller.",  "Plants.m2..Quadrat.", "Tillers.m2..Quadrat.", "Tillers.plant..SS.", "Heads.m2..Quadrat.", "..Fertile.Tillers..Quadrat.SS.", "Heads.plant..SS.", "1000.Grain.Wt..g.", "Grains.m2", "Grains.plant..quadrat.", "Grains.tiller..quadrat.", "Grains.head..quadrat.", "Screenings...2mm.....", "Harvest.Index..AR.", "Milling.Yield....", "Yield..g.m2.", "Seeds.floret")
+parameters_to_keep <- c("Spikelets.head", "Spikelet.wt..g.", "Crop.Height..cm.", "Emergence.Plants.m2", "AR.Dry.wt.area..g.m2.", "Plant.wt..g.plant.", "Tiller.wt..g.tiller.",  "Plants.m2..Quadrat.", "Tillers.m2..Quadrat.", "Tillers.plant..SS.", "Heads.m2..Quadrat.", "..Fertile.Tillers..Quadrat.SS.", "Heads.plant..SS.", "1000.Grain.Wt..g.", "Grains.m2", "Grains.plant", "Grains.tiller", "Grains.head", "Screenings...2mm.....", "Harvest.Index..AR.", "Milling.Yield....", "Yield..g.m2.", "Seeds.floret", "Single.plant.wt..g.", "Single.tiller.wt..g.", "Single.head.wt..g.")
+
+# cross check names in parameters_to_keep that are not in yj any more
+parameters_to_keep[!parameters_to_keep %in% names(yj)]
 
 # For now, we keep all parameters until all are definitively identified
 names(yj)[grep("Dry", names(yj))]
@@ -73,7 +78,7 @@ names(yj)[grep("Dry", names(yj))]
 # Getting rid of parameters we don't need
 descriptors <- names(yj)[1:10]
 
-yj <- yj[, c(names(yj) %in% descriptors | names(yj) %in% parameters_to_keep)]
+# yj <- yj[, c(names(yj) %in% descriptors | names(yj) %in% parameters_to_keep)]
 
 
 # create Environment variable               
@@ -97,8 +102,8 @@ yj$Ord.Environment <- factor(yj$Environment,
 
 # re-organise the data frame, all descriptors in front
 #yj <- yj[, c(1:10, 31:32, 11:30)]
-yj <- yj[, c(1:17, 98:99, 18:97)]
-
+#yj <- yj[, c(1:17, 98:99, 18:97)]
+yj <- yj[, c(1:17, 100:101, 18:99)]
 
 # create the long format of the data
 yj.melt <- melt(yj,
@@ -667,6 +672,29 @@ names(aov.details.out.melt)[3] <- "Parameter"
 aov.res <- aov.details.out.melt[aov.details.out.melt$value <= 0.05 & 
                                 !is.na(aov.details.out.melt$value),]
 
+# New addition in June 2014:
+# t-test for selected parameters for Glenn 2009 only.
+
+ttest.out <- dlply(yj.homogeneous[yj.homogeneous$variable %in% parameters_to_keep & yj.homogeneous$Year == 2009, ],
+                 .(TrialID, Year, TOS, variable, Stage),
+                 function(x) {
+                 
+                 out <- try(t.test(trans_value ~ CO2,
+                                    data = x,
+                                    na.action = na.omit))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      aov.out <- "not testable"} 
+                 else {
+                      print("successful fit")
+                      aov.out <- out}
+                 })
+sink("CO2xTOS_Walpeup_Ttest_results_after_transformation_2009_only.txt")
+        print(ttest.out)
+sink()
+
+
 p <- ggplot(aov.res, aes(x = variable, y = Parameter))
   p <- p + geom_point(aes(colour = value, shape =TrialID), 
                       size = 3.5, alpha = 0.66)
@@ -685,4 +713,92 @@ write.table(aov.details.out,
 
 dim(aov.res[aov.res$variable == "CO2:Cultivar", ])
 
+# new April 1, 2014
+# analysis of relative effects
 
+para.rel.analysis <- c("1000.Grain.Wt..g._rel_diff_to_aCO2",
+                       "AR.Dry.wt.area..g.m2._rel_diff_to_aCO2",
+                       "Yield..g.m2._rel_diff_to_aCO2", 
+                       "Grains.m2_rel_diff_to_aCO2")
+
+# Levene for the relative data
+rel.after.tests <- ddply(yj.rel.melt[yj.rel.melt$parameter %in% para.rel.analysis & yj.rel.melt$variable == "value", ],
+                   .(parameter, TrialID, Year, variable, Stage),
+                   function(x) {
+                 
+                 out <- try(leveneTest(value ~ TOS * Irrigation * Cultivar,
+                                    data = x))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      lev.out <- NA} 
+                 else {
+                      print("successful fit")
+                      lev.out <- out$`Pr(>F)`[1]}
+                names(lev.out) <- "Levene_p_value"
+                return(lev.out)
+                 })
+
+rel.after.tests$Leve_fail <- FALSE
+rel.after.tests$Leve_fail[rel.after.tests$Levene_p_value < 0.05 ] <- TRUE
+
+# Anova for relative data
+aov.rel.out <- dlply(yj.rel.melt[yj.rel.melt$parameter %in% para.rel.analysis & yj.rel.melt$variable == "value", ],
+                 .(parameter, TrialID, Year, variable, Stage),
+                 function(x) {
+                 
+                 out <- try(summary(aov(value ~ TOS * Irrigation * Cultivar,
+                                    data = x,
+                                    na.action = na.omit)))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      aov.out <- "not testable"} 
+                 else {
+                      print("successful fit")
+                      aov.out <- out}
+                 })
+sink("Walpeup_Anova_rel_results.txt")
+        print(aov.rel.out)
+sink()
+
+my.aov <- aov(value ~ TOS,
+         data = yj.rel.melt[yj.rel.melt$parameter == "Yield..g.m2._rel_diff_to_aCO2" & 
+         yj.rel.melt$variable == "value",])
+summary(my.aov)
+str(summary(my.aov))
+summary(my.aov)[[1]][["Pr(>F)"]]
+
+
+aov.rel.details.out <- ddply(yj.rel.melt[yj.rel.melt$parameter %in% para.rel.analysis & yj.rel.melt$variable == "value",],                   
+
+                 .(parameter, TrialID, Year, variable, Stage),
+                 function(x) {
+                 print(x)
+                 out <- try(aov(
+                       value ~ TOS,
+                                    data = x,
+                                    na.action = na.omit))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      aov.out <- c(rep(NA, 1))
+                      names(aov.out) <- c("TOS")
+                      return(aov.out)} 
+                 else {
+                      print("successful fit")
+                      my.terms <- rownames(summary(out)[[1]])[1:1]
+                      aov.out <- summary(out)[[1]][["Pr(>F)"]][1:1]
+                      names(aov.out) <- my.terms
+                      return(aov.out)
+                      }
+                 })
+names(aov.rel.details.out) <- gsub(" ", "", names(aov.rel.details.out))
+
+aov.rel.details.out.melt <- melt(aov.rel.details.out,
+                             id = names(aov.rel.details.out)[1:5])
+
+names(aov.rel.details.out.melt)[4] <- "rel"
+write.table(aov.rel.details.out.melt,
+         file = "Walpeup_Anova_p_values_rel_data.csv",
+         row.names = FALSE, sep = ",", na = "")

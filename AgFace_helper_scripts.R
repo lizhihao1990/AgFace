@@ -45,7 +45,7 @@ elevated_rings_2012 <- c(3, 5, 9, 13)
 # +++++++++++++++++++++++++++++++++++++++++++++
 
 # +++++++++++++++++++++++++++++++++++++++++++++
-# AgFACE Irrigation treatments in 2011 based on ring and plot numbers
+# AgFACE Irrigation treatments in 2012 based on ring and plot numbers
 supplement_loc_2012 <- data.frame(Year = rep(2012, 8),
                                   Ring = c(ambient_rings_2012, elevated_rings_2012),
                                   supp = c("west", "east", "west", "west",
@@ -176,10 +176,11 @@ MyMultPlotPlantProd <- function(dataframe,
                                                 vjust = 0.5))
        
   return(p) } else {
-  # create a dummy plot for paramters with 0 samples
+  # create a dummy plot for parameters with 0 samples
   p <- ggplot()
         p <- p + geom_text(data = NULL, aes(x = 1, y = 1), label = "missing data")
         p <- p + ylab(axis_label)
+        p <- p + theme_bw()
   return(p)
   }
 }

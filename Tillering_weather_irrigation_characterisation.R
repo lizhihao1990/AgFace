@@ -80,36 +80,36 @@ Horsham.annu.rainfall.2011 <- 507
 Horsham.annu.rainfall.2012 <- 287
 
 p <- ggplot(Env.char, aes(x = Environment, y = Water_received))
-  p <- p + geom_bar(stat = "identity")
-  p <- p + geom_text(aes(y = Water_received + 5, label = Water_received))
-  p <- p + geom_hline(yintercept = Mitchell.mean, colour = "red")
-  p <- p + geom_hline(yintercept = Mitchell.mean - Mitchell.sd, 
-                      colour = "grey", linetype = "dashed")
-  p <- p + geom_hline(yintercept = Mitchell.mean + Mitchell.sd, 
-                      colour = "grey", linetype = "dashed")
-  p <- p + geom_hline(yintercept = Mitchell2013, 
-                      colour = "green", linetype = "solid")
-  p <- p + annotate("text", y = 325, x = 0.5, 
-                    label = "Mitchell et al. (2012): 167 mm, red", 
-                    colour = "red", hjust = 0, size = 3)
-  p <- p + annotate("text", y = 310, x = 0.5, 
-                    label = "Mitchell et al. (2012): SD, grey", 
-                    colour = "grey", hjust = 0, size = 3)
-  p <- p + annotate("text", y = 295, x = 0.5, 
-                    label = "Mitchell et al. (2013): 171 mm, green", 
-                    colour = "green", hjust = 0, size = 3)
-  p <- p + annotate("text", y = 280, x = 0.5, 
-                    label = "Average annual rainfall for wheat worldwide: 275 to 700 mm ", 
-                    colour = "black", hjust = 0, size = 3)
-  p <- p + annotate("text", y = 265, x = 0.5, 
-                    label = "Long-term annual rainfall for Horsham: ~450 mm ", 
-                    colour = "black", hjust = 0, size = 3)
-  p <- p + annotate("text", y = 250, x = 0.5, 
-                    label = "Annual rainfall Horsham 2011: 507 mm BOM shows 552 mm", 
-                    colour = "black", hjust = 0, size = 3)
-  p <- p + annotate("text", y = 235, x = 0.5, 
-                    label = "Annual rainfall Horsham 2012: 287 mm, no BOM data yet", 
-                    colour = "black", hjust = 0, size = 3)
+  p <- p + geom_bar(stat = "identity", fill = "#003366")
+  p <- p + geom_text(aes(y = Water_received + 8, label = Water_received))
+#  p <- p + geom_hline(yintercept = Mitchell.mean, colour = "red")
+#  p <- p + geom_hline(yintercept = Mitchell.mean - Mitchell.sd, 
+#                      colour = "grey", linetype = "dashed")
+#  p <- p + geom_hline(yintercept = Mitchell.mean + Mitchell.sd, 
+#                      colour = "grey", linetype = "dashed")
+#  p <- p + geom_hline(yintercept = Mitchell2013, 
+#                      colour = "green", linetype = "solid")
+#  p <- p + annotate("text", y = 325, x = 0.5, 
+#                    label = "Mitchell et al. (2012): 167 mm, red", 
+#                    colour = "red", hjust = 0, size = 3)
+#  p <- p + annotate("text", y = 310, x = 0.5, 
+#                    label = "Mitchell et al. (2012): SD, grey", 
+#                    colour = "grey", hjust = 0, size = 3)
+#  p <- p + annotate("text", y = 295, x = 0.5, 
+#                    label = "Mitchell et al. (2013): 171 mm, green", 
+#                    colour = "green", hjust = 0, size = 3)
+#  p <- p + annotate("text", y = 280, x = 0.5, 
+#                    label = "Average annual rainfall for wheat worldwide:\n275 to 700 mm ", 
+#                    colour = "black", hjust = 0, size = 4)
+#  p <- p + annotate("text", y = 265, x = 0.5, 
+#                    label = "Long-term annual rainfall for Horsham: ~450 mm ", 
+#                    colour = "black", hjust = 0, size = 3)
+#  p <- p + annotate("text", y = 250, x = 0.5, 
+#                    label = "Annual rainfall Horsham 2011: 507 mm BOM shows 552 mm", 
+#                    colour = "black", hjust = 0, size = 3)
+#  p <- p + annotate("text", y = 235, x = 0.5, 
+#                    label = "Annual rainfall Horsham 2012: 287 mm, no BOM data yet", 
+#                    colour = "black", hjust = 0, size = 3)
 # size = theme_get()$text[["size"]])
   p <- p + labs(y = "Water received during season [mm]")
   p <- p + theme_bw()
@@ -118,7 +118,7 @@ p <- ggplot(Env.char, aes(x = Environment, y = Water_received))
 p
 
 ggsave(file = "Environment_rainfall.pdf",
-       width = 9, height = 7)
+       width = 7, height = 5)
 
 # calculate amount of water received up until each stage date
 stage_water <- ddply(stage_dates.melt,

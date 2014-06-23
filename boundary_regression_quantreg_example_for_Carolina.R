@@ -21,8 +21,8 @@ abline(linear)
 mod <- rq(Sepal.Length ~ Petal.Width, data = iris, tau = .95)
 
 # use the quantreg-model to predict where the line should be
-# first provide a meaningful x-range that should match the x-rangeof the data
-# we want 100 point to be predicted in this range
+# first provide a meaningful x-range that should match the x-range of the data
+# we want 100 points to be predicted in this range
 predict_range <- data.frame(Petal.Width = seq(0, 3, length = 100))
 
 # calculate for each x-range value the corresponding y-range

@@ -112,4 +112,6 @@ p <- ggplot(Carb.DC65.2011.tin, aes(x = Irrigation, y = Conc..mg.mg.))
 p
 ggsave(file = "2011_DC65_Carbohydrates.pdf", width = 7, height = 7)
 
+write.table(Carb.DC65.2011.tin,
+            file = "Carbohydrates_DC65_2011.csv", sep = ",", row.names = FALSE)
 save(Carb.DC65.2011.tin, file = "DC65_Carbohydrates_2011.RData", compress = TRUE)

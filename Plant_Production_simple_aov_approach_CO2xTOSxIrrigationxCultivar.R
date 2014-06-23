@@ -18,7 +18,10 @@
 setwd("~/AgFace/Plant_Production/Environment_comparison/CO2_TOS_Irrigation_Cultivar")
 
 # load exisiting workspaces
-load("../../Plant_Production_2007_2009_Glenn_Feb14_2014.RData")
+#load("../../Plant_Production_2007_2009_Glenn_Feb14_2014.RData")
+#load("../../Plant_Production_2007_2009_Glenn_Mar20_2014.RData")
+load("../../Plant_Production_2007_2009_Glenn_May29_2014.RData")
+
 
 # get rid of the objects from the workspace we don't need
 to_keep <- c("DCall")
@@ -27,6 +30,7 @@ rm(list = ls()[!(ls() %in% to_keep)])
 # load libraries
 require(car)
 require(reshape)
+require(plyr)
 
 # load Yitpi N-experiment helper script for custom Boxplot function
 source("~/AgFace/R_scripts/Yitpi_N_experiment_2007_2009_helper_script.R")
@@ -63,7 +67,14 @@ yj <- DCall[((DCall$Cultivar == "Yitpi" & DCall$Nitrogen == "N0") |
 
 # parameters_to_keep <- c("Emergence.Plants.m2", "AR.Dry.wt.area..g.m2.", "Plant.wt..g.plant.", "Plants.m2..Quadrat.", "Tillers.m2..Quadrat.", "Tillers.plant..Quadrat.", "Heads.m2..Quadrat.SS.", "Heads.plant..Quadrat.", "1000.Grain.Wt..g.", "Grains.m2", "Grains.plant..quadrat.", "Grains.tiller..quadrat.", "Grains.head..quadrat.", "Screenings...2mm.....", "Harvest.Index..AR.", "Yield..g.m2.", "Milling.Yield....", "Spikelets.head", "Spikelet.wt..g.", "Seeds.floret")
 
-parameters_to_keep <- c("Spikelets.head", "Spikelet.wt..g.", "Crop.Height..cm.", "Emergence.Plants.m2", "AR.Dry.wt.area..g.m2.", "Plant.wt..g.plant.", "Tiller.wt..g.tiller.",  "Plants.m2..Quadrat.", "Tillers.m2..Quadrat.", "Tillers.plant..SS.", "Heads.m2..Quadrat.", "..Fertile.Tillers..Quadrat.SS.", "Heads.plant..SS.", "1000.Grain.Wt..g.", "Grains.m2", "Grains.plant", "Grains.tiller", "Grains.head", "Screenings...2mm.....", "Harvest.Index..AR.", "Milling.Yield....", "Yield..g.m2.", "Seeds.floret")
+# Additional parameters, March 20, 2014:
+# DC90 Single plant wt g
+# DC90 Single tiller wt g
+# DC 90 Single head wt g
+parameters_to_keep <- c("Spikelets.head", "Spikelet.wt..g.", "Crop.Height..cm.", "Emergence.Plants.m2", "AR.Dry.wt.area..g.m2.", "Plant.wt..g.plant.", "Tiller.wt..g.tiller.",  "Plants.m2..Quadrat.", "Tillers.m2..Quadrat.", "Tillers.plant..SS.", "Heads.m2..Quadrat.", "..Fertile.Tillers..Quadrat.SS.", "Heads.plant..SS.", "1000.Grain.Wt..g.", "Grains.m2", "Grains.plant", "Grains.tiller", "Grains.head", "Screenings...2mm.....", "Harvest.Index..AR.", "Milling.Yield....", "Yield..g.m2.", "Seeds.floret", "Single.plant.wt..g.", "Single.tiller.wt..g.", "Single.head.wt..g.")
+
+# cross check names in parameters_to_keep that are not in yj any more
+parameters_to_keep[!parameters_to_keep %in% names(yj)]
 
 # For now, we keep all parameters until all are definitively identified
 names(yj)[grep("Dry", names(yj))]
@@ -95,7 +106,7 @@ yj$Ord.Environment <- factor(yj$Environment,
 
 # re-organise the data frame, all descriptors in front
 # yj <- yj[, c(1:10, 31:32, 11:30)]
-yj <- yj[, c(1:17, 98:99, 18:97)]
+yj <- yj[, c(1:17, 100:101, 18:99)]
 
 # create the long format of the data
 yj.melt <- melt(yj,
@@ -240,6 +251,7 @@ CalcPercent <- function(data, separator, value, reference) {
         resp.mean <- mean(response.values, na.rm = TRUE)
         resp.sd   <-   sd(response.values, na.rm = TRUE)
         
+        # now getting rid of the response values in the rel data
         response[, value_col] <- response.values
         ## return(response)
         
@@ -266,9 +278,16 @@ CalcPercent <- function(data, separator, value, reference) {
 #                                    resp_sd    = res.sd) 
         # adding the (redundant information into the results dataframe)
         #output <- c(response, mean_sd_table)
-        response$mean <- resp.mean
-        response$SD <- res.sd
+        # disabled output of means and sd April 2014
+        # response$mean <- resp.mean
+        # response$SD <- res.sd
         return(response)
+        
+        # April 2014 -- disabled again
+        # create a new data frame with the means only
+        # cols_to_keep <- c("TrialID", "Year", "CO2", "Irrigation", "Nitrogen", "TOS", "Cultivar", "Stage", "Ord.Environment", "mean", "SD")
+        # response.mean <- response[, names(response) %in% cols_to_keep]
+        #return(response.mean)
 }
 
 ## testing the test case
@@ -276,7 +295,7 @@ CalcPercent <- function(data, separator, value, reference) {
 
 # Calculate the relative response to eCO2 for each variable, stage and environment.
 rel.response <- ddply(yj.melt,
-                     .(TrialID, Year, variable, Stage),
+                     .(TrialID, Year, TOS, Stage, Irrigation, Nitrogen, Cultivar, Ord.Environment, variable),
                      function(x)
                      CalcPercent(x, "CO2", "value", "aCO2"))
 
@@ -322,19 +341,22 @@ yj.rel <- rel.response
 #             )
 
 
-## names get tangled up when using custom functions with "cast"
-#names(yitpi.rel) <- gsub("_function.x..mean.x..na.rm...TRUE.", "_Mean", names(yitpi.rel))
-#names(yitpi.rel) <- gsub("_function.x..sd.x..na.rm...TRUE.", "_SD", names(yitpi.rel))
-#names(yitpi.rel) <- gsub("_function.x..sum..is.na.x..", "_No_samples", names(yitpi.rel))
-
 names(yj.rel)[which(names(yj.rel) == "variable")] <- "parameter"
 # melt the table with the relative SD data
 yj.rel.melt <- melt(yj.rel,
                     id = names(yj.rel)[1:20])
 
 yj.rel.cast <- cast(yj.rel.melt,
-                    TrialID + Year + Stage + CO2 + Irrigation +  Cultivar ~ parameter + variable,
-                    fun = mean)
+       TrialID + Year + TOS + Stage + CO2 + Irrigation +  Cultivar ~ parameter + variable,
+       fun = c(function(x) mean(x, na.rm = TRUE),
+               function(x) sd(x, na.rm = TRUE),
+               function(x) sum(!is.na(x))),
+               fill = NaN)
+
+## names get tangled up when using custom functions with "cast"
+names(yj.rel.cast) <- gsub("_function.x..mean.x..na.rm...TRUE.", "_Mean", names(yj.rel.cast))
+names(yj.rel.cast) <- gsub("_function.x..sd.x..na.rm...TRUE.", "_SD", names(yj.rel.cast))
+names(yj.rel.cast) <- gsub("_function.x..sum..is.na.x..", "_No_samples", names(yj.rel.cast))
 
 write.table(yj.rel.cast,
             file = "Yitpi_Janz_plant_production_relative_difference_per_environment_relSD.csv",
@@ -717,3 +739,93 @@ p
 
 my.lm <- lm(sd ~ mean, data = yj.1000.means.sd )
 summary(my.lm)
+
+# new April 1, 2014
+# analysis of relative effects
+
+para.rel.analysis <- c("1000.Grain.Wt..g._rel_diff_to_aCO2",
+                       "AR.Dry.wt.area..g.m2._rel_diff_to_aCO2",
+                       "Yield..g.m2._rel_diff_to_aCO2", 
+                       "Grains.m2_rel_diff_to_aCO2")
+
+# Levene for the relative data
+rel.after.tests <- ddply(yj.rel.melt[yj.rel.melt$parameter %in% para.rel.analysis & yj.rel.melt$variable == "value", ],
+                   .(parameter, TrialID, Year, variable, Stage),
+                   function(x) {
+                 
+                 out <- try(leveneTest(value ~ TOS * Irrigation * Cultivar,
+                                    data = x))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      lev.out <- NA} 
+                 else {
+                      print("successful fit")
+                      lev.out <- out$`Pr(>F)`[1]}
+                names(lev.out) <- "Levene_p_value"
+                return(lev.out)
+                 })
+
+rel.after.tests$Leve_fail <- FALSE
+rel.after.tests$Leve_fail[rel.after.tests$Levene_p_value < 0.05 ] <- TRUE
+
+# Anova for relative data
+aov.rel.out <- dlply(yj.rel.melt[yj.rel.melt$parameter %in% para.rel.analysis & yj.rel.melt$variable == "value", ],
+                 .(parameter, TrialID, Year, variable, Stage),
+                 function(x) {
+                 
+                 out <- try(summary(aov(value ~ TOS * Irrigation * Cultivar,
+                                    data = x,
+                                    na.action = na.omit)))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      aov.out <- "not testable"} 
+                 else {
+                      print("successful fit")
+                      aov.out <- out}
+                 })
+sink("Horsham_Anova_rel_results.txt")
+        print(aov.rel.out)
+sink()
+
+my.aov <- aov(value ~ TOS * Irrigation * Cultivar,
+         data = yj.rel.melt[yj.rel.melt$parameter == "Emergence.Plants.m2_rel_diff_to_aCO2" & 
+         yj.rel.melt$variable == "value",])
+summary(my.aov)
+str(summary(my.aov))
+summary(my.aov)[[1]][["Pr(>F)"]]
+
+
+aov.rel.details.out <- ddply(yj.rel.melt[yj.rel.melt$parameter %in% para.rel.analysis & yj.rel.melt$variable == "value",],                   
+
+                 .(parameter, TrialID, Year, variable, Stage),
+                 function(x) {
+                 
+                 out <- try(aov(
+                       value ~ TOS * Irrigation * Cultivar,
+                                    data = x,
+                                    na.action = na.omit))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      aov.out <- c(rep(NA, 7))
+                      names(aov.out) <- c("TOS", "Irrigation", "Cultivar", "TOS:Irrigation", "TOS:Cultivar", "Irrigation:Cultivar", "TOS:Irrigation:Cultivar")
+                      return(aov.out)} 
+                 else {
+                      print("successful fit")
+                      my.terms <- rownames(summary(out)[[1]])[1:7]
+                      aov.out <- summary(out)[[1]][["Pr(>F)"]][1:7]
+                      names(aov.out) <- my.terms
+                      return(aov.out)
+                      }
+                 })
+names(aov.rel.details.out) <- gsub(" ", "", names(aov.rel.details.out))
+
+aov.rel.details.out.melt <- melt(aov.rel.details.out,
+                             id = names(aov.rel.details.out)[1:5])
+
+names(aov.rel.details.out.melt)[4] <- "rel"
+write.table(aov.rel.details.out.melt,
+         file = "Anova_p_values_rel_data.csv",
+         row.names = FALSE, sep = ",", na = "")

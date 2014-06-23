@@ -157,7 +157,9 @@ DC90.paras <- c("Yield..g.m2.",
                 "Spikelets.head",
                 "Grains.head..SS.",
                 "Grains.tiller..SS.",
-                "SS.1000.Grain.wt..g.")
+                "SS.1000.Grain.wt..g.",
+                "Grains.m2",
+                "Heads.m2_SS.dry.")
 #                "Chaff.g.m2")
 
 Nitrogen.paras <- c("X.N_Tiller", 

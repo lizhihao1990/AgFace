@@ -2,11 +2,13 @@
 
 setwd("~/AgFace/Topics/Tillering_2011_2012")
 
-# open workspace
+# open workspaces
 load("~/AgFace/Plant_Production/Silverstar_tin/Silverstar_tin_environment.RData")
+load("~/AgFace/Topics/Tillering_2011_2012/WSC/Carbohydrate_tillering_workspace.RData")
+load("~/AgFace/Topics/Tillering_2011_2012/WSC/WSC_lme_p_values.RData")
 
 # keep some objects
-to_keep <- c("df", "df.melt", "parameters_to_keep", "lme.out", "lme.res")
+to_keep <- c("df", "df.melt", "parameters_to_keep", "lme.out", "lme.res", "Carbs", "Carbs.melt", "Carbs.lme.out", "relev.p.values", "relev.p.values.Carbs")
 rm(list = ls()[!(ls() %in% to_keep)])
 
 # load libraries
@@ -21,7 +23,15 @@ source("~/AgFace/R_scripts/MyThemes.R")
 df      <- df[df$my.Trait           == "Silverstar", ]
 df.melt <- df.melt[df.melt$my.Trait == "Silverstar", ]
 
-# for comparison here the paramters used by Glenn for the Plant production analysis.
+Carbs      <- Carbs[Carbs$Trait           == "Silverstar", ]
+Carbs.melt <- melt(Carbs)
+Carbs.melt <- Carbs.melt[Carbs.melt$Trait == "Silverstar", ]
+
+# re-name traits to my.Trait to match plant production data sets
+names(Carbs)      <- gsub("Trait", "my.Trait", names(Carbs))
+names(Carbs.melt) <- gsub("Trait", "my.Trait", names(Carbs.melt))
+
+# for comparison here the parameters used by Glenn for the Plant production analysis.
 Glenn_paras <- c("Spikelets.head", "Spikelet.wt..g.", "Crop.Height..cm.", "Emergence.Plants.m2", "AR.Dry.wt.area..g.m2.", "Plant.wt..g.plant.", "Tiller.wt..g.tiller.",  "Plants.m2..Quadrat.", "Tillers.m2..Quadrat.", "Tillers.plant..SS.", "Heads.m2..Quadrat.", "..Fertile.Tillers..Quadrat.SS.", "Heads.plant..SS.", "1000.Grain.Wt..g.", "Grains.m2", "Grains.plant", "Grains.tiller", "Grains.head", "Screenings...2mm.....", "Harvest.Index..AR.", "Milling.Yield....", "Yield..g.m2.", "Seeds.floret")
 
 
@@ -33,7 +43,7 @@ CalcRes <- function(data, parameter, splits) {
               splits,
               summarise,
               mean = mean(value, na.rm = TRUE),
-              sd = sd(value, na.rm = TRUE))
+              sd   = sd(value, na.rm = TRUE))
    return(my.means)
 }
 
@@ -50,8 +60,20 @@ CalcPerc <- function(data, split) {
            return(perc)
            })}
 
+# Calculate percent change due to CO2
+CalcPercCO2 <- function(data, split) {
+           ddply(data,
+           split,
+           function(x) {
+           aCO2 <- x$mean[x$CO2 == "aCO2"]
+           eCO2  <- x$mean[x$CO2 == "eCO2"]
+           perc <- eCO2/aCO2 * 100 - 100
+           names(perc) <- "Percent_change_in_eCO2"
+           return(perc)
+           })}
 
-# Standard error fucntion
+
+# Standard error function
 stderr <- function(x) {
           sqrt(var(x[!is.na(x)]) / length(x[!is.na(x)]))
 }
@@ -68,7 +90,7 @@ my.stderr <- function(x) {
 }
 
 # graph output sizes
-my.width <- 17
+my.width  <- 17
 my.height <- my.width
 
 # graph elements
@@ -77,10 +99,11 @@ CO2.treats <- c(expression(textstyle(aCO[2])),
                 expression(textstyle(eCO[2])))
 
 # -------------------------------------------------------
-# Some figures
+# Some Plant production figures
+# -------------------------------------------------------
 
 # Tillering figure 
-p <- ggplot(df,#[df$Stage != "DC90", ], 
+p <- ggplot(df[df$Stage != "DC31", ], 
      aes(x = Cultivar, y = Tillers.m2..SS.dry.))
   p <- p + stat_summary(aes(colour = CO2), 
                         fun.data = "my.stderr", #mult = 1,
@@ -102,12 +125,16 @@ p <- ggplot(df,#[df$Stage != "DC90", ],
   p <- p + labs(y = expression("No. of tillers"~(Tillers~m^-2)))
   p <- p + facet_grid(Stage ~ Ord.Environment)
   p <- p + theme_my
-  p <- p + theme(legend.position = c(0.88, 0.90))
+  p <- p + theme(legend.position = c(0.08, 0.65))
 p
 fig.number.tillers <- p 
 
 ggsave(file = "Fig.01.Tillering_se.pdf", 
        width = my.width, height = my.height, 
+       units = "cm")
+
+ggsave(file = "Fig.01.Tillering_se_poster.pdf", 
+       width = my.width * 1.25, height = my.height * 0.75, 
        units = "cm")
 
 # Tillering does only respond to Cultivar. Not affected by any other factor
@@ -119,6 +146,17 @@ till.mean.change_perc <- till.means$mean[till.means$Cultivar == "SSR T65"] /
 
 till.perc <- CalcPerc(till.means, c("CO2", "Stage", "Environment"))
 till.perc
+
+till.percCO2 <- CalcPercCO2(till.means, c("Cultivar", "Stage", "Environment"))
+till.percCO2
+
+ddply(till.percCO2,
+      .(Cultivar),
+      summarise,
+      my.mean.Perc.Change = mean(Percent_change_in_eCO2))
+
+# ratio of tillers eCO2/aCO2
+mean(till.means.CO2agg$my.mean[till.means.CO2agg$CO2 == "eCO2"]) / mean(till.means.CO2agg$my.mean[till.means.CO2agg$CO2 == "aCO2"])
 
 lme.out$Silverstar.DC31.Tillers.m2..SS.dry.
 lme.out$Silverstar.DC65.Tillers.m2..SS.dry.
@@ -155,6 +193,10 @@ fig.yield.m2 <- p
 
 ggsave(file = "Fig.02.Yield_se.pdf", 
        width = my.width, height = my.height, 
+       units = "cm")
+
+ggsave(file = "Fig.02.Yield_se_poster.pdf", 
+       width = my.width * 1.25, height = my.height * 0.75, 
        units = "cm")
 
 lme.out$Silverstar.DC90.Yield..g.m2.
@@ -230,6 +272,38 @@ summary(grains.tiller.means[!is.na(grains.tiller.means$mean), ])
 grains.tiller.perc <- CalcPerc(grains.tiller.means, c("CO2", "Stage", "Environment"))
 grains.tiller.perc
 
+
+# Grains per Head "Grains.head_SS."
+
+p <- ggplot(df[df$Stage == "DC90", ], 
+            aes(x = Cultivar, y = Grains.head..SS.))
+  p <- p + stat_summary(aes(colour = CO2), 
+                        fun.data = "my.stderr", #mult = 1,
+                        position = position_dodge(width = 0.66), 
+                        geom = "linerange")
+  p <- p + stat_summary(aes(fill = CO2, shape = CO2), 
+                        fun.data = "my.stderr", #mult = 1, 
+                        geom = "point",
+                        position = position_dodge(width = 0.66))
+  p <- p + scale_colour_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("black", "black"))
+  p <- p + scale_shape_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c(21, 21))
+  p <- p + scale_fill_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("white", "black"))
+  p <- p + labs(y = "Grains per head")
+  p <- p + facet_grid(Stage ~ Ord.Environment)
+  p <- p + theme_my
+  p <- p + theme(legend.position = c(0.38, 0.90))
+p
+fig.grains_per_head <- p
+
+ggsave(file = "Grains_per_head_se.pdf", 
+       width = my.width, height = my.height, 
+       units = "cm")
 
 
 # Harvest index "Harvest.Index..AR."
@@ -565,6 +639,232 @@ ggsave(file = "Leaf_area_index_se.pdf",
 
 lme.out$Silverstar.DC65.GLAI..AR.dry.
 
+# Head numbers
+
+p <- ggplot(df[df$Stage == "DC65" | df$Stage == "DC90", ], 
+            aes(x = Cultivar, y = Heads.m2_SS.dry.))
+  p <- p + stat_summary(aes(colour = CO2), 
+                        fun.data = "my.stderr", #mult = 1,
+                        position = position_dodge(width = 0.66), 
+                        geom = "linerange")
+  p <- p + stat_summary(aes(fill = CO2, shape = CO2), 
+                        fun.data = "my.stderr", #mult = 1, 
+                        geom = "point",
+                        position = position_dodge(width = 0.66))
+  p <- p + scale_colour_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("black", "black"))
+  p <- p + scale_shape_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c(21, 21))
+  p <- p + scale_fill_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("white", "black"))
+  p <- p + labs(y = expression(Heads~per~m^2))
+  p <- p + facet_grid(Stage ~ Ord.Environment)
+  p <- p + theme_my
+  p <- p + theme(legend.position = c(0.4, 0.90))
+p
+
+fig.Heads_p_m2 <- p
+
+ggsave(file = "Heads_per_m2_se.pdf", 
+       width = my.width, height = my.height, 
+       units = "cm")
+
+lme.out$Silverstar.DC65.Heads.m2..SS.dry.
+lme.out$Silverstar.DC90.Heads.m2..SS.dry.
+
+# Grains per m2 Grains.m2
+p <- ggplot(df[df$Stage == "DC90", ], 
+            aes(x = Cultivar, y = Grains.m2))
+  p <- p + stat_summary(aes(colour = CO2), 
+                        fun.data = "my.stderr", #mult = 1,
+                        position = position_dodge(width = 0.66), 
+                        geom = "linerange")
+  p <- p + stat_summary(aes(fill = CO2, shape = CO2), 
+                        fun.data = "my.stderr", #mult = 1, 
+                        geom = "point",
+                        position = position_dodge(width = 0.66))
+  p <- p + scale_colour_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("black", "black"))
+  p <- p + scale_shape_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c(21, 21))
+  p <- p + scale_fill_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("white", "black"))
+  p <- p + labs(y = expression(Grains~per~m^2))
+  p <- p + facet_grid(Stage ~ Ord.Environment)
+  p <- p + theme_my
+  p <- p + theme(legend.position = c(0.4, 0.90))
+p
+
+fig.Grains_p_m2 <- p
+
+ggsave(file = "Grains_per_m2_se.pdf", 
+       width = my.width, height = my.height, 
+       units = "cm")
+
+lme.out$Silverstar.DC90.Grains.m2
+
+
+# Nitrogen in leaves
+
+p <- ggplot(df[df$Stage == "DC65", ], 
+            aes(x = Cultivar, y = X.N_Leaf))
+  p <- p + stat_summary(aes(colour = CO2), 
+                        fun.data = "my.stderr", #mult = 1,
+                        position = position_dodge(width = 0.66), 
+                        geom = "linerange")
+  p <- p + stat_summary(aes(fill = CO2, shape = CO2), 
+                        fun.data = "my.stderr", #mult = 1, 
+                        geom = "point",
+                        position = position_dodge(width = 0.66))
+  p <- p + scale_colour_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("black", "black"))
+  p <- p + scale_shape_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c(21, 21))
+  p <- p + scale_fill_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("white", "black"))
+  p <- p + labs(y = "%N in leaves")
+  p <- p + facet_grid(Stage ~ Ord.Environment)
+  p <- p + theme_my
+  p <- p + theme(legend.position = c(0.13, 0.80))
+p
+
+fig.N_leaves <- p
+
+ggsave(file = "Percent_N_in_leaves_se.pdf", 
+       width = my.width, height = my.height, 
+       units = "cm")
+
+ggsave(file = "Percent_N_in_leaves_se_poster.pdf", 
+       width = my.width * 1.25, height = my.height * 0.75, 
+       units = "cm")
+
+lme.out$Silverstar.DC31.X.N_Leaf
+lme.out$Silverstar.DC65.X.N_Leaf
+
+percN.means <- CalcRes(df.melt, "X.N_Leaf", c("CO2", "Environment", "Stage", "Cultivar"))
+
+percN.mean.change_perc <- percN.means$mean[percN.means$Cultivar == "SSR T65"] / 
+                          percN.means$mean[percN.means$Cultivar == "Silverstar"] * 100 -100
+
+percN.perc <- CalcPerc(percN.means, c("CO2", "Stage", "Environment"))
+percN.perc
+
+percN.percCO2 <- CalcPercCO2(percN.means, c("Cultivar", "Stage", "Environment"))
+percN.percCO2
+
+ddply(percN.percCO2,
+      .(Cultivar),
+      summarise,
+      my.mean.Perc.Change = mean(Percent_change_in_eCO2, na.rm = TRUE))
+
+# ratio of tillers eCO2/aCO2
+mean(till.means.CO2agg$my.mean[till.means.CO2agg$CO2 == "eCO2"]) / mean(till.means.CO2agg$my.mean[till.means.CO2agg$CO2 == "aCO2"])
+
+
+
+
+p <- ggplot(df[df$Stage == "DC65", ], 
+            aes(x = Cultivar, y = X.N_Heads))
+  p <- p + stat_summary(aes(colour = CO2), 
+                        fun.data = "my.stderr", #mult = 1,
+                        position = position_dodge(width = 0.66), 
+                        geom = "linerange")
+  p <- p + stat_summary(aes(fill = CO2, shape = CO2), 
+                        fun.data = "my.stderr", #mult = 1, 
+                        geom = "point",
+                        position = position_dodge(width = 0.66))
+  p <- p + scale_colour_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("black", "black"))
+  p <- p + scale_shape_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c(21, 21))
+  p <- p + scale_fill_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("white", "black"))
+  p <- p + labs(y = "%N in heads")
+  p <- p + facet_grid(Stage ~ Ord.Environment)
+  p <- p + theme_my
+  p <- p + theme(legend.position = c(0.4, 0.90))
+p
+
+fig.N_heads <- p
+
+ggsave(file = "Percent_N_in_heads_se.pdf", 
+       width = my.width, height = my.height, 
+       units = "cm")
+
+lme.out$Silverstar.DC31.X.N_Heads
+lme.out$Silverstar.DC65.X.N_Heads
+
+
+p <- ggplot(df, #[df$Stage == "DC65", ], 
+            aes(x = Cultivar, y = X.N_Tiller))
+  p <- p + stat_summary(aes(colour = CO2), 
+                        fun.data = "my.stderr", #mult = 1,
+                        position = position_dodge(width = 0.66), 
+                        geom = "linerange")
+  p <- p + stat_summary(aes(fill = CO2, shape = CO2), 
+                        fun.data = "my.stderr", #mult = 1, 
+                        geom = "point",
+                        position = position_dodge(width = 0.66))
+  p <- p + scale_colour_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("black", "black"))
+  p <- p + scale_shape_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c(21, 21))
+  p <- p + scale_fill_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("white", "black"))
+  p <- p + labs(y = "%N in tiller")
+  p <- p + facet_grid(Stage ~ Ord.Environment)
+  p <- p + theme_my
+  p <- p + theme(legend.position = c(0.4, 0.90))
+p
+
+fig.N_Tiller <- p
+
+ggsave(file = "Percent_N_in_tillers_se.pdf", 
+       width = my.width, height = my.height, 
+       units = "cm")
+
+# N-distribution
+
+p <- ggplot(df.melt[df.melt$variable == "X.N_Leaf"  |
+                    df.melt$variable == "X.N_Heads" |
+                    df.melt$variable == "X.N_Straw" | 
+                    df.melt$variable == "X.N_Tiller" |
+                    df.melt$variable == "X.N_Grain..scan..0..", ], 
+            aes(x = Stage, y = value))
+  p <- p + stat_summary(aes(colour = Cultivar, shape = variable), 
+                        fun.data = "my.stderr", #mult = 1,
+                        position = position_dodge(width = 0.66), 
+                        geom = "linerange")
+  p <- p + stat_summary(aes(colour = Cultivar, shape = variable), 
+                        fun.data = "my.stderr", #mult = 1, 
+                        geom = "point",
+                        position = position_dodge(width = 0.66))
+  p <- p + facet_grid(CO2 ~ Ord.Environment)
+  p <- p + labs(y = "%N")
+  p <- p + theme_my
+p
+
+fig.N_over_stages <- p
+
+ggsave(file = "Percent_N_over_stages_multiple_organs_se.pdf", 
+       width = my.width * 1.5, height = my.height, 
+       units = "cm")
+
 # Fun graphs
 # mean data
 df.mean <- cast(df.melt,
@@ -713,15 +1013,180 @@ summary(my.lm.SSRT65.aCO2)
 confint(my.lm.SSRT65.aCO2) # confint includes 0
 
 
+# --------------------------------------------------
+# Carbohydrate figures
+# --------------------------------------------------
 
+p <- ggplot(Carbs[Carbs$Organ == "Stem", ],# &
+#                  Carbs$Stage == "DC65", ],
+            aes(x = Cultivar, y = Conc..mg.mg.))
+  p <- p + stat_summary(aes(colour = CO2), 
+                        fun.data = "my.stderr", #mult = 1,
+                        position = position_dodge(width = 0.66), 
+                        geom = "linerange")
+  p <- p + stat_summary(aes(fill = CO2, shape = CO2), 
+                        fun.data = "my.stderr", #mult = 1, 
+                        geom = "point",
+                        position = position_dodge(width = 0.66))
+  p <- p + scale_colour_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("black", "black"))
+  p <- p + scale_shape_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c(21, 21))
+  p <- p + scale_fill_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("white", "black"))
+  p <- p + labs(y = expression(Stem~carbohydrate~concentration~(mg~mg^-1)))
+  p <- p + facet_grid(Stage ~ Ord.Environment, scale = "free_y")
+  p <- p + theme_my
+  p <- p + theme(legend.position = c(0.13, 0.85))
+p
+
+fig.Carbs.stem <- p
+
+ggsave(file = "Stem_Carbohydrate_tin_se_poster.pdf", 
+       width = my.width * 1.25, height = my.height * 0.75, 
+       units = "cm")
+
+p <- ggplot(Carbs[Carbs$Organ == "Leaf", ],
+            aes(x = Cultivar, y = Conc..mg.mg.))
+  p <- p + stat_summary(aes(colour = CO2), 
+                        fun.data = "my.stderr", #mult = 1,
+                        position = position_dodge(width = 0.66), 
+                        geom = "linerange")
+  p <- p + stat_summary(aes(fill = CO2, shape = CO2), 
+                        fun.data = "my.stderr", #mult = 1, 
+                        geom = "point",
+                        position = position_dodge(width = 0.66))
+  p <- p + scale_colour_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("black", "black"))
+  p <- p + scale_shape_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c(21, 21))
+  p <- p + scale_fill_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("white", "black"))
+  p <- p + labs(y = expression(Leaf~carbohydrate~concentration~(~mg~mg^-1)))
+  p <- p + facet_grid(Stage ~ Ord.Environment)
+  p <- p + theme_my
+  p <- p + theme(legend.position = c(0.63, 0.85))
+p
+
+fig.Carbs.leaf <- p
+
+carbs.means <- CalcRes(Carbs.melt, "Conc..mg.mg.", 
+                      c("CO2", "Environment", "Organ", "Stage", "Cultivar"))
+carbs.means[!is.na(carbs.means$mean), ]
+dlply(carbs.means[!is.na(carbs.means$mean), ],
+      .(CO2, Stage, Organ),
+      function(x) {summary(x)})
+summary(carbs.means[!is.na(carbs.means$mean), ])
+
+carbs.perc <- CalcPerc(carbs.means, c("CO2", "Organ", "Stage", "Environment"))
+carbs.perc
+
+ddply(carbs.perc,
+      .(CO2, Organ),
+      summarise,
+      my.mean.percent_change_in_Cultivars = mean(Percent_reduction_in_rtin))
+
+carbs.percCO2 <- CalcPercCO2(carbs.means, c("Cultivar", "Organ", "Stage", "Environment"))
+carbs.percCO2
+
+ddply(carbs.percCO2,
+      .(Cultivar, Stage),
+      summarise,
+      my.mean.percent_change_in_eCO2 = mean(Percent_change_in_eCO2))
+
+carbs.mean.change_perc <- carbs.means$mean[carbs.means$Cultivar == "SSR T65"] / 
+                          carbs.means$mean[carbs.means$Cultivar == "Silverstar"] * 100 -100
+carbs.mean.change_perc
+Carbs.lme.out[4:6] # display the lme results for Silverstar
+
+# ternary plot yield components: grain number, grain weight, head number
+# not technically tenrary, as the individual values are from different measurement systems
+library(ggtern)
+p <- ggtern(df, aes(x = Yield_g.m2. / 6, 
+                    y = SS.1000.Grain.wt_g. * 3, 
+                    z = Heads.m2_SS.dry. / 2))
+  p <- p + geom_point(aes(colour = Cultivar, shape = CO2))
+  p <- p + theme_bw()
+  p <- p + ggtitle("Ternary plot of yield components")
+#p
+
+# --------------------------------------------------
 # assemble figures
+# --------------------------------------------------
 my.figures <- ls()[grep("^fig", ls())]
 my.figures.list <- llply(my.figures,
               function(x) get(x))
+names(my.figures.list) <- my.figures
 
 pdf(file = "Tillering_figures.pdf",
     width = my.width/2.54, height = my.height/2.54)
     print(my.figures.list)
 dev.off()
 
+pdf(file = "Carbohydrates_leaf_stem_figures.pdf",
+    width = my.width/2.54, height = my.height/2.54)
+    print(my.figures.list$fig.Carbs.leaf)
+    print(my.figures.list$fig.Carbs.stem)
+dev.off()
 
+# --------------------------------------------------
+# table of p-values for selected parameters
+# --------------------------------------------------
+my.paras <- c("Yield..g.m2.", "Grains.m2",  "Grains.head..SS.", "Heads.m2..SS.dry.", "SS.1000.Grain.wt..g.", "X.N_Leaf", "X.N_Heads", "X.N_Grain..scan..0..", "WSC_conc_mg_per_mg")
+my.paras.good.names <- c("Yield", "Grains m^-2", "Grains per head", "Heads m^-2", "1000 grains weight", "%N Leaf", "%N Head", "%N Grain", "WSC concentration")
+
+the.paras <- data.frame(my.paras, my.paras.good.names)
+
+relev.p.values$Organ <- NA
+names(relev.p.values) <- gsub("my.Trait", "Trait", names(relev.p.values))
+relev.p.values.all <- rbind(relev.p.values, relev.p.values.Carbs)
+
+relev.p.values.all.poster <- relev.p.values.all[relev.p.values.all$variable %in% my.paras &
+                                                relev.p.values.all$Trait == "Silverstar", ]
+
+relev.p.values.all.poster.cast <- cast(relev.p.values.all.poster,
+                              variable + Trait + Stage + Organ ~ AOV_factor)
+
+MyAsteriks <- function(data) {
+              ifelse(data <= 0.001, "***",
+                     ifelse(data <= 0.01, "**",
+                            ifelse(data <= 0.05, "*", "")))
+}
+
+my.p.table <- relev.p.values.all.poster.cast
+my.p.table[, c("CO2", "Cultivar", "Environment", "CO2:Cultivar", "Cultivar:Environment")] <- lapply(my.p.table[, c("CO2", "Cultivar", "Environment", "CO2:Cultivar", "Cultivar:Environment")], function(x) MyAsteriks(x))
+my.p.table$Parameter <- NA
+my.p.table$Parameter[the.paras$my.paras == my.p.table$variable] <- the.paras$my.paras.good.names[the.paras$my.paras == my.p.table$variable]
+
+
+write.table(my.p.table, file = "LME_results_table.csv", row.names = FALSE, sep = ",", na = "")
+
+relev.p.values.all.poster <- merge(relev.p.values.all.poster, the.paras,
+                                   by.x = "variable",
+                                   by.y = "my.paras")
+                                   
+p <- ggplot(relev.p.values.all.poster[(relev.p.values.all.poster$Stage == "DC65" |
+                           relev.p.values.all.poster$Stage == "DC90") &
+                           relev.p.values.all.poster$Trait == "Silverstar", ],
+            aes(x = AOV_factor, y = my.paras.good.names))
+  p <- p + geom_point(aes(colour = value))
+  p <- p + scale_colour_gradient(low = "green", high = "red", name = "p-value")
+  p <- p + facet_grid(Stage ~ .)
+  p <- p + theme_bw()
+  p <- p + labs(x = "ANOVA Factor", y = "Variable")
+  p <- p + scale_x_discrete(labels = c("CO2", "Cultivar", "Environment", "CO2 x\nCultivar", "Cultivar x\n Environment"))
+  p <- p + theme(legend.position = c(0.72, 0.3))
+  p <- p + theme(#axis.text.x = element_text(angle = 90, hjust = 0),
+                 axis.text.y = element_text(size = rel(0.6)),
+                 strip.background = element_rect(fill = "white"),
+                 legend.key       = element_blank())
+p
+
+fig.p.value.table <- p
+ggsave(file = "AOV_table_tin.pdf", width = my.width/2.54, height = my.height/2.54)

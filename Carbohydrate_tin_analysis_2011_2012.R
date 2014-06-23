@@ -1,4 +1,11 @@
-# Carbohydrate tillering merge and analysis
+# Analyse the water soluble carbohydrate data 2011/2012 from SB and Silverstar lines
+
+# set working directory, open workspace, clean up workspace
+setwd("~/AgFace/Topics/Tillering_2011_2012/WSC")
+load(file = "Carbohydrate_tillering_workspace.RData")
+
+to_keep <- c("Carbs")
+rm(list = ls()[!(ls() %in% to_keep)])
 
 # libraries
 require(ggplot2)
@@ -6,51 +13,14 @@ require(plyr)
 require(reshape)
 require(nlme)
 
-# set working directory
-setwd("~/AgFace/Topics/Tillering_2011_2012")
+# rename Conc..mg.mg.
+names(Carbs) <- gsub("Conc\\.\\.mg\\.mg\\.", "WSC_conc_mg_per_mg", names(Carbs))
 
-# import the data from
-load("../Carbohydrates_DC65_2009_2010_2011_2012/DC65_Carbohydrates_2012.RData")
-load("../Carbohydrates_DC31_2011_2012/CarbohydratesDC31_2011_2012.RData")
-load("../Carbohydrates_DC65_2009_2010_2011_2012/DC65_Carbohydrates_2011.RData")
+# re-order data frame to have all descriptors in front
+my.descriptors <- c("Year", "Ring", "Plot", "Trait", "Cultivar", "CO2", "Stage", "Organ", "RingPos",
+                    "my.HalfringID", "Irrigation", "Environment", "Ord.Environment")
 
-CarbohydratesDC31$Year <- as.numeric(as.character(CarbohydratesDC31$Year))
-DC65_2012$Year <- as.numeric(as.character(DC65_2012$Year))
-Carb.DC65.2011.tin$Year <- as.numeric(as.character(Carb.DC65.2011.tin$Year))
-
-# assemble the data
-Carbs <- rbind(CarbohydratesDC31, DC65_2012)
-
-Carb.DC65.2011.tin$sample.ID <- NULL
-
-Carbs <- rbind(Carbs, Carb.DC65.2011.tin)
-
-# the traits
-Silverstars <- c("Silverstar", "SSR T65")
-SBs <- c("SB062", "SB003")
-
-# assign traits to cultivars
-Carbs$Trait <- NA
-Carbs$Trait[Carbs$Cultivar %in% Silverstars] <- "Silverstar"
-Carbs$Trait[Carbs$Cultivar %in% SBs] <- "SB"
-Carbs$Trait <- as.factor(Carbs$Trait)
-
-# re-order cultivars
-Carbs$Cultivar <- factor(Carbs$Cultivar, 
-                         levels = c("SB003", "SB062", "Silverstar", "SSR T65"))
-
-# re-name Environments to match other workspaces
-Carbs$Environment <- gsub("Supp", "Sup", Carbs$Environment)
-
-# format Carbs
-Carbs$Ring <- as.factor(Carbs$Ring)
-Carbs$Year <- as.factor(Carbs$Year)
-Carbs$Environment     <- as.factor(Carbs$Environment)
-Carbs$Ord.Environment <- as.factor(Carbs$Environment)
-
-# Factor Order from tillering plant production data
-Carbs$Ord.Environment <- factor(Carbs$Ord.Environment, 
-               levels = c("2011.Rain", "2012.Rain", "2012.Sup", "2011.Sup"))
+Carbs <- Carbs[, c(my.descriptors, "WSC_conc_mg_per_mg")]
 
 # reshape the data into long format
 Carbs.melt <- melt(Carbs)
@@ -162,9 +132,24 @@ p
 
 ggsave(file = "Silverstar_Tin_Carbohydrates_lme_results.pdf",
        width = 7, height = 7)
-save.image(file = "Carbohydrate_tillering_workspace.RData", compress = TRUE)
 
+# export data
+README <- c("Water soluble carbohydrates, Agface, years 2011/2012. Markus Löw, May 2014. WSC_conc_mg_per_mg is carbohydrate concentration in mg/mg.")
+save(list = c("Carbs", "README"), file = "WSC_Agface_2011_2012.RData", compress = TRUE)
 
+# for Maryse
+Carbs.SB.Stem <- Carbs[Carbs$Trait == "SB" &
+                       Carbs$Organ == "Stem", ]
 
-write.table(Carbs, file = "Carbohydrate_Stem_Leaf_2011_2012.csv",
+save(list = c("Carbs.SB.Stem", "README"), 
+     file = "WSC_Agface_2011_2012_SB_Stem.RData", 
+     compress = TRUE)
+
+# export as csv file
+write.table(Carbs[, -c(grep("Environment", names(Carbs)))], 
+            file = "WSC_Agface_Stem_Leaf_2011_2012.csv",
             row.names = FALSE, sep = ",")
+            
+# export p-value table
+relev.p.values.Carbs <- relev.p.values
+save(relev.p.values.Carbs, file = "WSC_lme_p_values.RData", compress = TRUE)

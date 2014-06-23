@@ -49,6 +49,12 @@ DC31_2012$CO2 <- NA
 DC31_2012$CO2[DC31_2012$Ring %in% ambient_rings_2012] <- "aCO2"
 DC31_2012$CO2[DC31_2012$Ring %in% elevated_rings_2012] <- "eCO2"
 
+# identified typos in the data files provided by Michael (french interns)
+# Ring 3, Plot F, 2012, Sb062 should be plot P!
+DC31_2012$Plot[DC31_2012$Plot == "F" &
+               DC31_2012$Ring == 3 &
+               DC31_2012$Year == 2012] <- as.factor("P")
+
 # combine 2011 and 2012 DC31 data
 DC31_both <- rbind(DC31_2011, DC31_2012)
 DC31_both$Year <- as.factor(DC31_both$Year)
