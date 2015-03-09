@@ -51,17 +51,17 @@ HH2Import <- function(filename) {
    names(imported) <- c(names(imported)[1:4], specific.names)
 
    # format the "Time" column
-   imported$Time <- as.POSIXct(imported$Time, format = "%d/%m/%Y %H:%M:%S")
+   imported$Time <- as.POSIXct(imported$Time, format = "%d/%m/%Y %H:%M")
    
    # split the data frame per sensor depth
    # based on column names
    my.descriptors        <- c("Time", "Sample", "Plot", "Device")
    my.descriptor.columns <- which(names(imported) %in% my.descriptors)
    
-   # split the data frame per each depth
+   # split the data frame per each unique depth
    # returns a list of data frames, one for each depth
    # each data frame has depth information
-   my.frames <- lapply(sensor.depth, function(x) {
+   my.frames <- lapply(unique(sensor.depth), function(x) {
         # creates a search pattern based on sensor depth information
         # use the search pattern result to select vectors from the data frame
         # add depth information to resulting data frames
@@ -85,6 +85,8 @@ HH2Import <- function(filename) {
    # removing this column, but only when it is empty - just in case
    # leaving it alone for now, who knows if this column serves a purpose in the future
    
+   # re-order column order in data frame
+   imported <- imported[, c("Time", "Sample", "Plot", "Device", "Depth", "Percent_Vol", "Vol_Error", "mV", "mV_Error")]
    # return the imported data frame
    return(imported)
 }

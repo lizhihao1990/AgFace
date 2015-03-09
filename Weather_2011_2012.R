@@ -4,7 +4,7 @@
 require(xlsx)
 require(reshape)
 require(ggplot2)
-
+require(plyr)
 
 # set working directory
 setwd("~/AgFace/Weather")

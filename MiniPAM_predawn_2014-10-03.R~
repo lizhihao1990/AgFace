@@ -1,0 +1,5 @@
+# MiniPAM pre-anthesis 2014
+
+setwd("~/AgFace/2014/MiniPAM/2014-10-03_pre_dawn")
+
+df <- LoadMiniPAM("minicom_no_settings.cap")

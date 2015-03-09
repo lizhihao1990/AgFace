@@ -50,3 +50,6 @@ write.table(df,
             file = "Irrigation_rainfall_data_2007_2012.csv",
             sep = ",", row.names = FALSE)
 
+Met.Irri <- df
+rm(df)
+save.image("Meteo_Irrigation_info.RData", compress = TRUE)

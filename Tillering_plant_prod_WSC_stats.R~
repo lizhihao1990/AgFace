@@ -1,0 +1,99 @@
+# Import carbohydrate data for 2011 and 2012
+
+setwd("~/AgFace/Topics/Tillering_2011_2012")
+
+# open workspaces
+load("~/AgFace/Plant_Production/Silverstar_tin/Silverstar_tin_environment.RData")
+load("~/AgFace/Topics/Tillering_2011_2012/WSC/Carbohydrate_tillering_workspace.RData")
+load("~/AgFace/Topics/Tillering_2011_2012/WSC/WSC_lme_p_values.RData")
+
+# keep some objects
+to_keep <- c("df", "df.melt", "parameters_to_keep", "lme.out", "lme.res", "Carbs", "Carbs.melt", "Carbs.lme.out", "relev.p.values", "relev.p.values.Carbs")
+rm(list = ls()[!(ls() %in% to_keep)])
+
+# load libraries
+require(ggplot2)
+require(plyr)
+require(reshape)
+
+# load my ggplot themes
+source("~/AgFace/R_scripts/MyThemes.R")
+
+# get rid of "SB" data, only keep "tin"!
+df      <- df[df$my.Trait           == "Silverstar", ]
+df.melt <- df.melt[df.melt$my.Trait == "Silverstar", ]
+
+Carbs      <- Carbs[Carbs$Trait           == "Silverstar", ]
+Carbs.melt <- melt(Carbs)
+Carbs.melt <- Carbs.melt[Carbs.melt$Trait == "Silverstar", ]
+
+# re-name traits to my.Trait to match plant production data sets
+names(Carbs)      <- gsub("Trait", "my.Trait", names(Carbs))
+names(Carbs.melt) <- gsub("Trait", "my.Trait", names(Carbs.melt))
+
+# for comparison here the parameters used by Glenn for the Plant production analysis.
+Glenn_paras <- c("Spikelets.head", "Spikelet.wt..g.", "Crop.Height..cm.", "Emergence.Plants.m2", "AR.Dry.wt.area..g.m2.", "Plant.wt..g.plant.", "Tiller.wt..g.tiller.",  "Plants.m2..Quadrat.", "Tillers.m2..Quadrat.", "Tillers.plant..SS.", "Heads.m2..Quadrat.", "..Fertile.Tillers..Quadrat.SS.", "Heads.plant..SS.", "1000.Grain.Wt..g.", "Grains.m2", "Grains.plant", "Grains.tiller", "Grains.head", "Screenings...2mm.....", "Harvest.Index..AR.", "Milling.Yield....", "Yield..g.m2.", "Seeds.floret")
+
+
+# response function
+# Calulates mean and SD per given parameter and split combination
+CalcRes <- function(data, parameter, splits) {
+   my.df <- data[data$variable == parameter, ]
+   my.means <- ddply(my.df,
+              splits,
+              summarise,
+              mean = mean(value, na.rm = TRUE),
+              sd   = sd(value, na.rm = TRUE))
+   return(my.means)
+}
+
+
+# Calculate percent reduction in SSR T65 compared to Silverstar
+CalcPerc <- function(data, split) {
+           ddply(data,
+           split,
+           function(x) {
+           silv <- x$mean[x$Cultivar == "Silverstar"]
+           sst  <- x$mean[x$Cultivar == "SSR T65"]
+           perc <- sst/silv * 100 - 100
+           names(perc) <- "Percent_reduction_in_rtin"
+           return(perc)
+           })}
+
+# Calculate percent change due to CO2
+CalcPercCO2 <- function(data, split) {
+           ddply(data,
+           split,
+           function(x) {
+           aCO2 <- x$mean[x$CO2 == "aCO2"]
+           eCO2  <- x$mean[x$CO2 == "eCO2"]
+           perc <- eCO2/aCO2 * 100 - 100
+           names(perc) <- "Percent_change_in_eCO2"
+           return(perc)
+           })}
+
+
+# Standard error function
+stderr <- function(x) {
+          sqrt(var(x[!is.na(x)]) / length(x[!is.na(x)]))
+}
+
+# Then create a wrapper to *stderr* to make it compatible with *stat_summary*
+# see values shown in ?stat_summary
+my.stderr <- function(x) {
+             meany <- mean(x)
+             ymin  <- mean(x) - stderr(x)
+             ymax  <- mean(x) + stderr(x)
+             # assemble the named output
+             out <- c(y = meany, ymin = ymin, ymax = ymax)
+             return(out)
+}
+
+# graph output sizes
+my.width  <- 17
+my.height <- my.width
+
+# graph elements
+CO2.label  <- expression(textstyle(CO[2]~treatment))
+CO2.treats <- c(expression(textstyle(aCO[2])), 
+                expression(textstyle(eCO[2])))

@@ -45,6 +45,13 @@ elevated_rings_2012 <- c(3, 5, 9, 13)
 # +++++++++++++++++++++++++++++++++++++++++++++
 
 # +++++++++++++++++++++++++++++++++++++++++++++
+# PlotIDs 2012
+# Plot Ids are ring specific!
+
+ 
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++
 # AgFACE Irrigation treatments in 2012 based on ring and plot numbers
 supplement_loc_2012 <- data.frame(Year = rep(2012, 8),
                                   Ring = c(ambient_rings_2012, elevated_rings_2012),
@@ -59,6 +66,57 @@ supplement_locations <- rbind(supplement_loc_2011, supplement_loc_2012)
 ambient_rings_2013  <- c(4, 7, 11, 16)
 elevated_rings_2013 <- c(2, 6, 10, 15)
 # +++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++
+# AgFACE CO2 treatments in 2014 based on ring numbers
+# with lentil rings
+ambient_rings_2014  <- c(1, 3, 7, 8, 11, 12, 14, 15)
+elevated_rings_2014 <- c(2, 4, 5, 6, 9, 10, 13, 16)
+# +++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++
+# PlotIDs and Cultivar 2014
+# applies to wheat only
+PlotIDs2014 <- c("W1", "W2", "R1", "R2", "N1", "N2", "Q1", "Q2")
+Cultivars2014 <- c("Wet Scout", "Wet Yitpi", "Scout", "Yitpi", "Gladius", 
+                    "Wyalkatchem", "RS411-1", "RS-411-5")
+PlotIDsCultivars2014 <- data.frame(PlotID = PlotIDs2014, 
+                                   Cultivar = Cultivars2014)
+# +++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++
+# PlotIDs and Cultivar 2009 to 2013
+# applies to wheat only
+PlotRingCult <- read.csv("~/AgFace/Samples/Sample_list_Sept_2014/Sample_list_plotIDs_2009_2013.csv")
+PlotRingCult$sample. <- NULL
+PlotRingCult$Stage <- NULL
+PlotRingCult$Head <- NULL
+PlotRingCult$leaf <- NULL
+PlotRingCult$Stem <- NULL
+PlotRingCult$Grain <- NULL
+PlotRingCult$Comments <- NULL
+
+names(PlotRingCult) <- gsub("Variety", "Cultivar", names(PlotRingCult))
+
+PlotRingCult$TOS <- gsub(" ", "", PlotRingCult$TOS)
+PlotRingCult$TOS <- as.factor(PlotRingCult$TOS)
+
+PlotRingCult$RingID <- as.numeric(as.character(PlotRingCult$RingID))
+
+PlotRingCult$CO2 <- gsub("No CO2", "aCO2", PlotRingCult$CO2)
+PlotRingCult$CO2 <- gsub("^CO2", "eCO2", PlotRingCult$CO2)
+PlotRingCult$CO2 <- as.factor(PlotRingCult$CO2)
+
+PlotRingCult$Irrigation <- gsub("No irrig", "rainfed", PlotRingCult$Irrigation)
+PlotRingCult$Irrigation <- gsub("Irrig", "supp", PlotRingCult$Irrigation)
+PlotRingCult$Irrigation <- gsub("Rain$", "rainfed", PlotRingCult$Irrigation)
+PlotRingCult$Irrigation <- gsub("Sup$", "supp", PlotRingCult$Irrigation)
+PlotRingCult$Irrigation <- gsub("Suppl", "supp", PlotRingCult$Irrigation)
+PlotRingCult$Irrigation <- as.factor(PlotRingCult$Irrigation)
+PlotRingCult <- unique(PlotRingCult)
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 .PlotIsIrrigated <- function(PlotName, Ring, Year) {

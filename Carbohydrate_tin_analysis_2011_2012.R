@@ -62,11 +62,12 @@ ggsave(file = "GRDC_report_stem_carbs_boxplot.pdf",
        width = 7, height = 14)
 
 lme.out <- dlply(Carbs.melt,
-                 .(Trait, Stage, Organ, variable),
+                 .(Year, Trait, Stage, Organ, variable),
                  function(x) {
-                 
-                 out <- try(anova(lme(value ~ CO2 * Cultivar * Environment,
-                      random = ~ 1 | my.HalfringID/Cultivar,
+# old model      try(anova(lme(value ~ CO2 * Cultivar * Environment,
+#                    random = ~ 1 | my.HalfringID/Cultivar,            
+                 out <- try(anova(lme(value ~ CO2 * Irrigation * Cultivar,
+                      random = ~ 1 | Ring/Cultivar,
                       data = x,
                       na.action = na.omit)))
                     
@@ -104,13 +105,13 @@ lme.res <- na.omit(lme.res)
 
 # melt the data down for the graph
 lme.res.melt <- melt(lme.res)
-names(lme.res.melt)[5] <- "AOV_factor"
+names(lme.res.melt)[6] <- "AOV_factor"
 
 #head(lme.res.melt[is.na(lme.res.melt$variable), ])
 
-#write.table(lme.res.melt,
-#            file = "lme_pvalues.csv",
-#            row.names = FALSE, sep = ",")
+write.table(lme.res.melt,
+            file = "SB_Silverstar_WSC_nested_AOV_pvalues.csv",
+            row.names = FALSE, sep = ",")
 
 relev.p.values <- lme.res.melt[lme.res.melt$AOV_factor != "(Intercept)" &
                                !is.na(lme.res.melt$AOV_factor) & 
@@ -123,7 +124,7 @@ p <- ggplot(relev.p.values,
   p <- p + geom_point(aes(colour = value, shape = Organ),
                       position = position_dodge(width = 0.5))
   p <- p + scale_colour_gradient(low = "green", high = "red", name = "p-value")
-  p <- p + facet_grid(Stage ~ Trait)
+  p <- p + facet_grid(Stage ~ Trait * Year)
   p <- p + theme_bw()
   p <- p + labs(x = "ANOVA Factor")
   p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 0),

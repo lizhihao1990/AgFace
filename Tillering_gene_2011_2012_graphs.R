@@ -770,8 +770,6 @@ ddply(percN.percCO2,
 mean(till.means.CO2agg$my.mean[till.means.CO2agg$CO2 == "eCO2"]) / mean(till.means.CO2agg$my.mean[till.means.CO2agg$CO2 == "aCO2"])
 
 
-
-
 p <- ggplot(df[df$Stage == "DC65", ], 
             aes(x = Cultivar, y = X.N_Heads))
   p <- p + stat_summary(aes(colour = CO2), 
@@ -864,6 +862,48 @@ fig.N_over_stages <- p
 ggsave(file = "Percent_N_over_stages_multiple_organs_se.pdf", 
        width = my.width * 1.5, height = my.height, 
        units = "cm")
+
+# Added July 2014
+# How different were the canopies?
+# What paramter to use for that?
+# "GLAI_AR.dry."  Green leaf area index already taken care of via "fig.LAI"                                  
+# "GSAI_AR.dry."  
+# "GAI_AR.dry."   Green area index
+# "NDVI"
+# "Green.cover.fraction_photos."
+
+lme.out$Silverstar.DC31.GLAI..AR.dry.
+lme.out$Silverstar.DC65.GLAI..AR.dry.
+
+
+p <- ggplot(df[df$Stage != "DC90", ], 
+            aes(x = Cultivar, y = GAI_AR.dry.))
+  p <- p + stat_summary(aes(colour = CO2), 
+                        fun.data = "my.stderr", #mult = 1,
+                        position = position_dodge(width = 0.66), 
+                        geom = "linerange")
+  p <- p + stat_summary(aes(fill = CO2, shape = CO2), 
+                        fun.data = "my.stderr", #mult = 1, 
+                        geom = "point",
+                        position = position_dodge(width = 0.66))
+  p <- p + scale_colour_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("black", "black"))
+  p <- p + scale_shape_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c(21, 21))
+  p <- p + scale_fill_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("white", "black"))
+  #p <- p + labs(y = "%N in tiller")
+  p <- p + facet_grid(Stage ~ Ord.Environment)
+  p <- p + theme_my
+  p <- p + theme(legend.position = c(0.4, 0.90))
+p
+fig.GAI <- p
+
+lme.out$Silverstar.DC31.GAI..AR.dry.
+lme.out$Silverstar.DC65.GAI..AR.dry.
 
 # Fun graphs
 # mean data
@@ -1104,6 +1144,7 @@ carbs.mean.change_perc <- carbs.means$mean[carbs.means$Cultivar == "SSR T65"] /
                           carbs.means$mean[carbs.means$Cultivar == "Silverstar"] * 100 -100
 carbs.mean.change_perc
 Carbs.lme.out[4:6] # display the lme results for Silverstar
+
 
 # ternary plot yield components: grain number, grain weight, head number
 # not technically tenrary, as the individual values are from different measurement systems

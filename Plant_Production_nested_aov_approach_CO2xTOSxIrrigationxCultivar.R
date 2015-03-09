@@ -1,0 +1,920 @@
+# Wheat in different environments
+# integration of Horsham and Walpeup data
+# Afer discussion with Glenn, Dec 11, 2013.
+
+# This aov configuration is only valid for Horsham.
+# only lookig at DC90-parameters
+
+# looking into responses of Yitpi and Janz in different environments
+
+# based on scripts 
+# "Plant_Production_2007_2009.R" and
+# "Walpeup_data_shuffle.R"
+
+# now modified for new file form Glenn that integrates Horsham and Walpeup data
+# based on script "Plant_Production_import_new_file_from_Glenn_2007-2009.R" only!
+
+# set the working directory within the Plant Production folder
+setwd("~/AgFace/Plant_Production/Environment_comparison/CO2_TOS_Irrigation_Cultivar_nested")
+
+# load exisiting workspaces
+#load("../../Plant_Production_2007_2009_Glenn_Feb14_2014.RData")
+#load("../../Plant_Production_2007_2009_Glenn_Mar20_2014.RData")
+load("../../Plant_Production_2007_2009_Glenn_May29_2014.RData")
+
+
+# get rid of the objects from the workspace we don't need
+to_keep <- c("DCall")
+rm(list = ls()[!(ls() %in% to_keep)])
+
+# load libraries
+require(car)
+require(reshape)
+require(plyr)
+
+# load Yitpi N-experiment helper script for custom Boxplot function
+source("~/AgFace/R_scripts/Yitpi_N_experiment_2007_2009_helper_script.R")
+
+# only keep Horsham in this comparison
+yj <- DCall[((DCall$Cultivar == "Yitpi" & DCall$Nitrogen == "N0") | 
+             DCall$Cultivar == "Janz")  & DCall$TrialID  == "Horsham", ]
+
+# and as an aov for Irrigation does not make sens if one location does not have both treatments, we only keep 
+
+# select parameters to be analysed
+#Emergence/m2
+#Biomass (g)
+#Plant wt (g)
+#Plants/m2
+#Tillers/m2
+#Tillers/plant
+#Heads/m2
+#Heads/plant
+#1000 Grain Wt (g)
+#Grains/m2
+#Grains/plant
+#Grains/tiller
+#Grains/head
+#Screenings (<2mm) (%)
+#Harvest Index
+#Yield (g/m2)
+#Milling Yield (%)
+
+#Spikelets per head
+#Spikelet wt (g)
+
+#Grains per spikelet (= Seeds per floret)
+
+# parameters_to_keep <- c("Emergence.Plants.m2", "AR.Dry.wt.area..g.m2.", "Plant.wt..g.plant.", "Plants.m2..Quadrat.", "Tillers.m2..Quadrat.", "Tillers.plant..Quadrat.", "Heads.m2..Quadrat.SS.", "Heads.plant..Quadrat.", "1000.Grain.Wt..g.", "Grains.m2", "Grains.plant..quadrat.", "Grains.tiller..quadrat.", "Grains.head..quadrat.", "Screenings...2mm.....", "Harvest.Index..AR.", "Yield..g.m2.", "Milling.Yield....", "Spikelets.head", "Spikelet.wt..g.", "Seeds.floret")
+
+# Additional parameters, March 20, 2014:
+# DC90 Single plant wt g
+# DC90 Single tiller wt g
+# DC 90 Single head wt g
+parameters_to_keep <- c("Spikelets.head", "Spikelet.wt..g.", "Crop.Height..cm.", "Emergence.Plants.m2", "AR.Dry.wt.area..g.m2.", "Plant.wt..g.plant.", "Tiller.wt..g.tiller.",  "Plants.m2..Quadrat.", "Tillers.m2..Quadrat.", "Tillers.plant..SS.", "Heads.m2..Quadrat.", "..Fertile.Tillers..Quadrat.SS.", "Heads.plant..SS.", "1000.Grain.Wt..g.", "Grains.m2", "Grains.plant", "Grains.tiller", "Grains.head", "Screenings...2mm.....", "Harvest.Index..AR.", "Milling.Yield....", "Yield..g.m2.", "Seeds.floret", "Single.plant.wt..g.", "Single.tiller.wt..g.", "Single.head.wt..g.")
+
+# cross check names in parameters_to_keep that are not in yj any more
+parameters_to_keep[!parameters_to_keep %in% names(yj)]
+
+# For now, we keep all parameters until all are definitively identified
+names(yj)[grep("Dry", names(yj))]
+
+# Getting rid of parameters we don't need
+descriptors <- names(yj)[1:10]
+
+# yj <- yj[, c(names(yj) %in% descriptors | names(yj) %in% parameters_to_keep)]
+
+
+# create Environment variable               
+yj$Environment <- interaction(yj$TrialID,
+                              yj$Year, 
+                              yj$Irrigation,
+                              yj$TOS,
+                              drop = TRUE)
+
+# sort Environment by increasing Grain yield in aCO2
+# Michael: I would group the environments according to their grain yield under aCO2 on the x axis. This should show us already lots!
+
+Ord.Env <- ddply(yj[yj$CO2 == "aCO2", ],
+              .(Environment),
+              summarise,
+              mean_yield = mean(Yield..g.m2., na.rm = TRUE))
+
+yj$Ord.Environment <- factor(yj$Environment,
+                             levels = Ord.Env$Environment[order(Ord.Env$mean_yield)],
+                             ordered = TRUE)
+
+# re-organise the data frame, all descriptors in front
+# yj <- yj[, c(1:10, 31:32, 11:30)]
+yj <- yj[, c(1:17, 100:101, 18:99)]
+
+# create the long format of the data
+yj.melt <- melt(yj,
+                id = names(yj)[1:19])
+
+# Now it is time to shuffle three parameters into DC90
+# then get rind of al DC65
+#move_stage_paras <- c("Spikelets.head", "Spikelet.wt..g.", "Heads.plant..Quadrat.")
+
+#yj.melt$Stage[yj.melt$Stage == "DC65" & yj.melt$variable %in% move_stage_paras] <- as.factor("DC90")
+
+#yj.melt <- yj.melt[yj.melt$Stage == "DC90", ]
+
+yj.sum <- cast(yj.melt[yj.melt$variable %in% parameters_to_keep, ],  
+             TrialID + CO2 + Stage + Year + TOS + Irrigation + Cultivar ~ variable, 
+             c(function(x) mean(x, na.rm = TRUE),
+               function(x) sd(x, na.rm = TRUE),
+               function(x) sum(!is.na(x))),
+               fill = NaN
+             )
+
+
+# names get tangled up when using custom functions with "cast"
+names(yj.sum) <- gsub("_function.x..mean.x..na.rm...TRUE.", "_Mean", names(yj.sum))
+names(yj.sum) <- gsub("_function.x..sd.x..na.rm...TRUE.", "_SD", names(yj.sum))
+names(yj.sum) <- gsub("_function.x..sum..is.na.x..", "_No_samples", names(yj.sum))
+
+write.table(yj.sum,
+            file = "Yitpi_Janz_plant_production_summary_per_year.csv",
+            row.names = FALSE,
+            na = "",
+            sep = ",")
+
+
+# Boxplots in a loop for Janz and YitpiN0 only
+# my.boxplots <- dlply(yj.melt,
+my.boxplots <- dlply(yj.melt[yj.melt$variable %in% parameters_to_keep, ],
+                  .(TrialID, variable),
+                  function(x) {
+                  MyBoxplot(dataframe = x, 
+                            label     = x$variable, 
+                            xaxis = "Cultivar", 
+                            yaxis = "value", 
+                            treatment_sep_a = "CO2", 
+                            treatment_sep_b = "Irrigation", 
+                            facet_var_a = "Year", 
+                            facet_var_b = "TOS",
+                            two_separators = TRUE,
+                            the_x_label = "Cultivar",
+                            the_main_title = "Horsham")})
+
+# orig line: MyBoxplot(x, x$variable, "Ord.Environment", "value", "CO2", "CO2", "Stage", ".")})
+
+pdf("Horsham_CO2xTOSxIrrigationxCultivar_boxplots_Yipti_Janz_Feb10_free_y_simple.pdf")
+        print(my.boxplots)
+dev.off()
+
+## More graphs
+##From: Glenn
+##To: michael
+##Subject: CO2 response Analysis
+##Date: Fri, 6 Sep 2013 15:50:08 +1000
+##Michael,
+
+##I think it would be useful to plot the data  like Markus has done with aCO2 and eCO2 as %CO2 response. Thus, another set of box plots ordered by %yield response.  Thoughts on how to do stats on response?  Since you have to calculate from rep means you lose the ability to do AOV.  I'd you agree then Marcus could run another set of analyses.
+
+##Cheers,
+##Glenn
+
+##From: Michael
+##To: Glenn
+##Subject: RE: CO2 response Analysis
+##Date: Fri, 6 Sep 2013 07:05:24 +0000
+
+##HI Glenn, Markus,
+
+##If we use ratios (i. e. eCO2 as multiple or precentage of aCO2) there are rules on how to combine the SDs for the new ratios:
+
+##Mean value A +- sdA, mean value B +- sdB and we want X = A/B, the new SD
+
+##    SD = X * sqrt( (sdA/A)**2 + (dB/B)**2)
+## 
+##Need to read up in a trusty basic stats book, as I pulled this off the web. From memory this looks about right (there is a different rule for subtractions - in fact easier: just the sqrt of the sum of SD squares)
+
+##This way we could calculate percentage response with its appropriate SD around it, and if everything was normally distributed (in the population!) we would not give away information.
+
+##I think this might be useful in analysing the relationship of this response to other parameters (e. g. environmental indices?) or analysing interrelationships among responses (e. g. yield response directly correlated to relative N decrease?)
+
+##Pretty much from the top of my head, so please use with caution.
+
+
+# Calculate %CO2 response
+# 100% is set as the aCO2 for each Environment
+
+
+# create a little data set to test the boxcox function
+#myvalue <- sample(-25:25, 20)
+#mydata <- as.data.frame(x = myvalue)
+#mydata$CO2_treat <- "aCO2"
+#mydata$CO2_treat[11:20] <- "eCO2"
+#mydata$CO2_treat <- as.factor(mydata$CO2_treat)
+#mydata$N <- "N0"
+#mydata$N[11:20] <- "N+"
+#mydata$N <- as.factor(mydata$N)
+## mydata
+#rm(myvalue)
+
+
+
+CalcPercent <- function(data, separator, value, reference) {
+        ## Calculate the %response compared to a mean reference
+        ## returns a data frame with the %response-values in place of the original data.
+        ## only the 
+        
+        
+        # data: a data frame
+        # value: name of the column to be investigated
+        # separator: a name that distinguishes between reference and response
+        # reference: a name that identifies the reference treatment within the separator.
+        
+        # calculate the mean of of the reference
+        sep_col <- which(names(data) == separator)
+        value_col <- which(names(data) == value)
+
+        # there must be an easier way...        
+        # all rows of data that match the specified reference
+        matches <- which(data[, sep_col] == reference)
+        ref <- data[matches, ]
+        ref.mean <- mean(ref[, value_col], na.rm = TRUE)
+        ref.sd   <-   sd(ref[, value_col], na.rm = TRUE)
+        
+        # select the data that are not part of the reference
+        non.ref <- which(data[, sep_col] != reference)
+        response <- data[non.ref, ]
+        response.values <- response[, value_col]
+        # calculating the relative difference between treatments
+        # absolute: ## response.values <- response.values / ref.mean * 100
+
+        # Glenn, Sept 13:
+        # I calculate the relative response as:  (eCO2-aCO2)/aCO2 * 100. 
+        response.values <- (response.values - ref.mean) / ref.mean * 100
+        resp.mean <- mean(response.values, na.rm = TRUE)
+        resp.sd   <-   sd(response.values, na.rm = TRUE)
+        
+        # now getting rid of the response values in the rel data
+        response[, value_col] <- response.values
+        ## return(response)
+        
+        # calculate relative standard deviation - to do?
+        ## Mean value A +- sdA, mean value B +- sdB and we want X = A/B, the new SD
+        ##    SD = X * sqrt( (sdA/A)**2 + (dB/B)**2)
+        ## for the relative difference, the sd calculation is more complex
+        ## SD = 100**2 sd((B/A) - 1) = 100**2 SD(B/A)
+        ## SD = sqrt(variance)
+        #res.sd <- 100^2 * sqrt(var(response.values/ref[, value_col]))
+
+        ##res.sd <- 100^2 * (sd(response.values, na.rm = TRUE)/sd(ref[, value_col], na.rm = TRUE))
+        # if there is no difference involved
+        res.sd <- resp.mean * sqrt( (resp.sd/resp.mean)^2 + (ref.sd/ref.mean)^2) 
+        
+        
+        current_variable <- unique(data$variable)
+        current_Stage    <- unique(data$Stage)
+        current_Ord.Env  <- unique(data$Ord.Environment)
+#        mean_sd_table <- data.frame(variable = current_variable,
+#                                    Stage    = current_Stage,
+#                                    Ord.Environment = current_Ord.Env,
+#                                    resp_mean = resp.mean,
+#                                    resp_sd    = res.sd) 
+        # adding the (redundant information into the results dataframe)
+        #output <- c(response, mean_sd_table)
+        # disabled output of means and sd April 2014
+        # response$mean <- resp.mean
+        # response$SD <- res.sd
+        return(response)
+        
+        # April 2014 -- disabled again
+        # create a new data frame with the means only
+        # cols_to_keep <- c("TrialID", "Year", "CO2", "Irrigation", "Nitrogen", "TOS", "Cultivar", "Stage", "Ord.Environment", "mean", "SD")
+        # response.mean <- response[, names(response) %in% cols_to_keep]
+        #return(response.mean)
+}
+
+## testing the test case
+## CalcPercent(mydata, "CO2_treat", "myvalue", "aCO2")
+
+# Calculate the relative response to eCO2 for each variable, stage and environment.
+rel.response <- ddply(yj.melt,
+                     .(TrialID, Year, TOS, Stage, Irrigation, Nitrogen, Cultivar, Ord.Environment, variable),
+                     function(x)
+                     CalcPercent(x, "CO2", "value", "aCO2"))
+
+# rename the variable to inidate these are relative differences
+rel.response$variable <- gsub("$", "_rel_diff_to_aCO2", rel.response$variable)
+
+# extract the mean data
+# yj.rel <- rel.response[, -c(4, 15)]
+yj.rel <- rel.response
+
+
+# checking the yield data
+#p <- ggplot(rel.response[rel.response$variable == "Yield..g.m2.", ],
+#            aes(x = Ord.Environment, y = value))
+#        p <- p + geom_boxplot(aes(colour = CO2))
+#p
+
+
+# re-ordering the Environemnts based on maximum relative difference
+# Glenn 13/09/2013: I'd like them ordered by relative yield response rather than absolute yield so we can compare these data sets quickly. 
+
+# This section was taken out on Sept 30. Email Glenn:
+#I was wondering if you could plot the relative data in the order of the absolute yield data? 
+
+#----------------------------------------------------------
+#Rel.Ord.Env <- ddply(rel.response[rel.response$variable == "Yield..g.m2._rel_diff_to_aCO2",],
+#              .(Ord.Environment),
+#              summarise,
+#              mean_rel_yield = mean(value, na.rm = TRUE))
+
+#rel.response$Ord.Environment <- factor(rel.response$Ord.Environment,
+#                             levels = Rel.Ord.Env$Ord.Environment[order(Rel.Ord.Env$mean_rel_yield)],
+#                             ordered = TRUE)
+#----------------------------------------------------------
+
+## rel response results table
+#yitpi.rel <- cast(rel.response, 
+#             CO2 + Stage + Ord.Environment ~ variable, 
+#             c(function(x) mean(x, na.rm = TRUE),
+#               function(x) sd(x, na.rm = TRUE),
+#               function(x) sum(!is.na(x))),
+#               fill = NaN
+#             )
+
+
+names(yj.rel)[which(names(yj.rel) == "variable")] <- "parameter"
+# melt the table with the relative SD data
+yj.rel.melt <- melt(yj.rel,
+                    id = names(yj.rel)[1:20])
+
+yj.rel.cast <- cast(yj.rel.melt,
+       TrialID + Year + TOS + Stage + CO2 + Irrigation +  Cultivar ~ parameter + variable,
+       fun = c(function(x) mean(x, na.rm = TRUE),
+               function(x) sd(x, na.rm = TRUE),
+               function(x) sum(!is.na(x))),
+               fill = NaN)
+
+## names get tangled up when using custom functions with "cast"
+names(yj.rel.cast) <- gsub("_function.x..mean.x..na.rm...TRUE.", "_Mean", names(yj.rel.cast))
+names(yj.rel.cast) <- gsub("_function.x..sd.x..na.rm...TRUE.", "_SD", names(yj.rel.cast))
+names(yj.rel.cast) <- gsub("_function.x..sum..is.na.x..", "_No_samples", names(yj.rel.cast))
+
+write.table(yj.rel.cast,
+            file = "Yitpi_Janz_plant_production_relative_difference_per_environment_relSD.csv",
+            row.names = FALSE,
+            na = "",
+            sep = ",")
+
+
+# Boxplots in a loop for relative response data
+# my.boxplots <- dlply(rel.response,
+my.boxplots <- dlply(rel.response[rel.response$variable %in% parameters_to_keep, ],
+                  .(TrialID, variable),
+                  function(x) {
+                  MyBoxplot(dataframe = x, 
+                            label     = x$variable, 
+                            xaxis = "Cultivar", 
+                            yaxis = "value", 
+                            treatment_sep_a = "CO2", 
+                            treatment_sep_b = "Irrigation", 
+                            facet_var_a = "Year", 
+                            facet_var_b = "TOS",
+                            two_separators = TRUE,
+                            the_x_label = "Cultivar",
+                            the_main_title = "Relative response, Horsham")})
+
+pdf("Horsham_boxplots_Yipti_Janz_relative_response_free_y_simple_aov.pdf")
+        print(my.boxplots)
+dev.off()
+
+
+# Statistical tests
+# To be true to the analysis we should do the following:
+# 1) Perform an AOV on each year*location individually (eg, Horsham 2007, Walpeup 2008) with CO2, TOS, irrigation and cultivar
+# 2) Do an exploratory analysis of the results from (1) to determine if TOS is significant and look at interactions.  Based on previous analyses, there are very few interactions and TOS
+# appears to be significant in almost all cases for the data analysed here, except probably for HI.
+# 3) Most likely, for most variables, we will analyse TOS separately since it will probably be highly significant and in any case fits the view that this is a very different environment and
+#should be analysed separately.
+
+# checking assumptions for ANOVA
+shap.out <- shapiro.test(yj$Yield..g.m2.)
+shap.out$p.value
+
+lev.out <- leveneTest(Yield..g.m2. ~ CO2 * TOS * Irrigation * Cultivar, 
+                      data = yj)
+lev.out$`Pr(>F)`[1]
+# Check all parameters for normality
+levene.out <- dlply(yj.melt,
+                   .(TrialID, Year, variable, Stage),
+                   function(x) {
+                 
+                 out <- try(leveneTest(value ~ CO2 * TOS * Irrigation * Cultivar,
+                                    data = x))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      lev.out <- "not testable"} 
+                 else {
+                      print("successful fit")
+                      lev.out <- out}
+                 })
+sink("Complete_Levene_test.txt")
+        print(levene.out)
+sink()
+
+## When the sample size is small, even big departures from normality are not detected, and when your sample size is large, even the smallest deviation from normality will lead to a rejected null.
+
+# Check the sample size
+n_size.out <- ddply(yj.melt,
+                   .(TrialID, Year, variable, Stage),
+                   summarise,
+                   n = sum(!is.na(value)))
+
+# Test for normality of the underlying population
+
+shapiro.out <- ddply(yj.melt,
+                   .(TrialID, Year, variable, Stage),
+                   function(x) {
+                 
+                 out <- try(shapiro.test(x$value))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      sha.out <- NA} 
+                 else {
+                      print("successful fit")
+                      sha.out <- out$p.value}
+                names(sha.out) <- "Shapiro_p_value"
+                return(sha.out)
+                 })
+
+sample_and_shapiro <- merge(n_size.out, shapiro.out)
+
+# Extract the levene result for each parameter
+levene.out <- ddply(yj.melt,
+                   .(TrialID, Year, variable, Stage),
+                   function(x) {
+                 
+                 out <- try(leveneTest(value ~ CO2 * TOS * Irrigation * Cultivar,
+                                    data = x))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      lev.out <- NA} 
+                 else {
+                      print("successful fit")
+                      lev.out <- out$`Pr(>F)`[1]}
+                names(lev.out) <- "Levene_p_value"
+                return(lev.out)
+                 })
+
+# Assemble a table on normality and homogeneity of variances
+pre.tests <- merge(sample_and_shapiro, levene.out)
+
+pre.tests$either_fail <- FALSE
+pre.tests$either_fail[pre.tests$Shapiro_p_value < 0.05 |
+                      pre.tests$Levene_p_value < 0.05] <- TRUE
+
+pre.tests$Shap_Leve_fail <- FALSE
+pre.tests$Shap_Leve_fail[pre.tests$Shapiro_p_value < 0.05 &
+                         pre.tests$Levene_p_value < 0.05] <- TRUE
+
+pre.tests$Shap_fail <- FALSE
+pre.tests$Shap_fail[pre.tests$Shapiro_p_value < 0.05 ] <- TRUE
+
+pre.tests$Leve_fail <- FALSE
+pre.tests$Leve_fail[pre.tests$Levene_p_value < 0.05 ] <- TRUE
+
+write.table(pre.tests,
+            file = "Shapiro_wilk_Levene_result_raw_data.csv",
+            row.names = FALSE,
+            sep = ",",
+            na = "")
+
+
+# transform the data that do not meet our pre-requisites for the test
+
+# Fortunately, an anova is not very sensitive to moderate deviations from normality; simulation studies, using a variety of non-normal distributions, have shown that the false positive rate is not affected very much by this violation of the assumption (Glass et al. 1972, Harwell et al. 1992, Lix et al. 1996).
+     
+#    Glass, G.V., P.D. Peckham, and J.R. Sanders. 1972. Consequences of failure to meet assumptions underlying fixed effects analyses of variance and covariance. Rev. Educ. Res. 42: 237-288.
+#    Harwell, M.R., E.N. Rubinstein, W.S. Hayes, and C.C. Olds. 1992. Summarizing Monte Carlo results in methodological research: the one- and two-factor fixed effects ANOVA cases. J. Educ. Stat. 17: 315-339.
+#    Lix, L.M., J.C. Keselman, and H.J. Keselman. 1996. Consequences of assumption violations revisited: A quantitative review of alternatives to the one-way analysis of variance F test. Rev. Educ. Res. 66: 579-619.
+ 
+# Failure of non-homogeneous variances are more severe.
+# now using the Levene result to decide if transformation is needed.
+
+to_transform <- pre.tests[pre.tests$Leve_fail == TRUE, ]
+to_transform <- to_transform[, c("variable", "Year", "Stage")]
+
+nrow(to_transform)
+length(sort(unique(interaction(to_transform$variable,  
+                               to_transform$Year, 
+                               to_transform$Stage, drop = TRUE))))
+
+yj.to_transform <- yj.melt[
+                  interaction(yj.melt$variable, yj.melt$Year, yj.melt$Stage) %in% 
+                  interaction(to_transform$variable, to_transform$Year,to_transform$Stage), ]
+
+length(sort(unique(interaction(yj.to_transform$variable, 
+                               yj.to_transform$Year,
+                               yj.to_transform$Stage, drop = TRUE))))
+
+# the "good" data that do not need transformation
+yj.no_transform <- yj.melt[!
+                  interaction(yj.melt$variable, yj.melt$Year, yj.melt$Stage) %in% 
+                  interaction(to_transform$variable, to_transform$Year, to_transform$Stage), ]
+
+yj.no_transform[yj.no_transform$variable == "1000.Grain.Wt..g.",]
+
+# calling Myhist function from helper script
+#myhist <- MyHist(yj.test, 
+#       label = yj.test$variable,
+#       yaxis = "value",
+#       treatment_sep_a = "CO2",
+#       treatment_sep_b = "TOS",
+#       facet_var_a = "Stage",
+#       facet_var_b = "Cultivar")
+#myhist
+
+# Boxplots in a loop for Horsham only
+my.hist <- dlply(yj.to_transform,
+                  .(variable),
+                  function(x) {
+                  MyHist(dataframe = x, 
+                         label     = x$variable,
+                         yaxis = "value", 
+                         treatment_sep_a = "CO2", 
+                         treatment_sep_b = "Irrigation", 
+                         facet_var_a = "Year", 
+                         facet_var_b = "TOS"
+                         )})
+
+# orig line: MyBoxplot(x, x$variable, "Ord.Environment", "value", "CO2", "CO2", "Stage", ".")})
+
+#pdf("Horsham_Histograms_for_non_homogeneous_paras.pdf")
+#        print(my.hist)
+#dev.off()
+
+
+# extract a small test-parameter from yitpi.to_transform to test the boxcoc-Transformation
+yj.test <- yj.to_transform[yj.to_transform$variable == "Yield..g.m2.", ]
+yj.test <- yj.to_transform[yj.to_transform$variable == "1000.Grain.Wt..g.", ]
+# hist(yitpi.test$value)
+
+# Transformation function that uses box-cox to transform and uses leveneTest to check homogeneity of variances
+
+# the boxcox-transformation has been moed to its own script "BoxCox_transformation.R"
+
+source("~/AgFace/R_scripts/BoxCox_transformation.R")
+
+out <- BoxcoxTrans(yj.test, yj.test$value, yj.test$CO2, yj.test$TOS, yj$Irrigation)
+
+# data frame with the transformed data
+yj.transformed  <- ddply(yj.to_transform,
+                    .(TrialID, Year, variable, Stage),
+                    function(x){
+                    BoxcoxTrans(x, x$value, x$CO2, x$TOS, x$Irrigation, x$Cultivar)
+                    })
+
+# checking the success of the transformtaion
+after.tests <- ddply(yj.transformed,
+                   .(TrialID, Year, variable, Stage),
+                   function(x) {
+                 
+                 out <- try(leveneTest(trans_value ~ CO2 * TOS * Irrigation * Cultivar,
+                                    data = x))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      lev.out <- NA} 
+                 else {
+                      print("successful fit")
+                      lev.out <- out$`Pr(>F)`[1]}
+                names(lev.out) <- "Levene_p_value"
+                return(lev.out)
+                 })
+
+after.tests$Leve_fail <- FALSE
+after.tests$Leve_fail[after.tests$Levene_p_value < 0.05 ] <- TRUE
+
+write.table(after.tests,
+            file = "After_transformation_Levene_results.csv",
+            sep = ",",
+            row.names = FALSE)
+
+# Put the transformed and non-transformed data back together
+# Add a column to the non-transformed data to match the format of the transformed data frame. This column is a copy of the orginal values.
+yj.no_transform$trans_value <- yj.no_transform$value
+yj.all_transformed <- rbind(yj.no_transform, yj.transformed)
+
+bad.paras <- interaction(after.tests$variable[after.tests$Leve_fail == TRUE],
+                         after.tests$Year[after.tests$Leve_fail == TRUE],
+                         after.tests$Stage[after.tests$Leve_fail == TRUE])
+
+# export the "non-homogeneous" parameters
+write.table(bad.paras,
+            file = "Non-homogeneous_parameters.txt",
+            row.names = FALSE,
+            col.names = FALSE)
+            
+yj.all_transformed$inter <- interaction(yj.all_transformed$variable,
+                                        yj.all_transformed$Year,
+                                        yj.all_transformed$Stage)
+
+# keepimg all parameters in the analysis, despite failed anov-prerequisites
+# as requested by Glenn.
+# yj.homogeneous <- yj.all_transformed[!(yj.all_transformed$inter %in% bad.paras), ]
+
+yj.homogeneous <- yj.all_transformed
+
+yj.all_transformed[yj.all_transformed$variable =="1000.Grain.Wt..g.", ]
+yj.homtest <- yj.homogeneous[yj.homogeneous$variable == "1000.Grain.Wt..g.", ]
+
+# Run an anova
+# run the analysis on all cases for YitpiN0
+# aov.out <- dlply(yj.homogeneous,
+
+
+# Implementing nesting for the anova
+# nesting differes between years:
+# In 2007, whole rings were irrigated. TOS is nested within irrigation
+# in 2008 and 2009, whole rings were planted at different TOS, 
+# Irrigation is nested within TOS
+
+rats <- read.csv("~/Desktop/rat.csv")
+
+rats.2 <- rats[rats$selection == TRUE, ]
+
+summary(aov(glycogen ~ food * prep * method + Error(rat/food:prep), 
+            data = rats.2))
+summary(aov(glycogen ~ food * prep * method + Error(rat/prep:food), 
+            data = rats.2))
+summary(aov(glycogen ~ food * prep * method + Error(rat/prep/food), 
+            data = rats.2))
+yj.homogeneous$RingID <- as.factor(as.character(yj.homogeneous$RingID ))
+
+# create halfringID for nesting testing
+yj.homogeneous$my.HalfRingID <- interaction(yj.homogeneous$Year, 
+                                          yj.homogeneous$RingID,
+                                          yj.homogeneous$HalfRingID)
+# nested-anova
+small.testdf <- yj.homogeneous[yj.homogeneous$Year == 2009 &
+                               #yj.homogeneous$TOS == "TOS1" &  
+                               yj.homogeneous$TrialID == "Horsham" &
+                               yj.homogeneous$Stage == "DC90" &
+                               yj.homogeneous$variable == "Yield..g.m2.", ]
+
+nested.aov.2009 <- summary(aov(trans_value ~ CO2 * TOS * Irrigation * Cultivar + 
+                          Error(RingID/TOS : Irrigation),
+                          data = small.testdf,
+                          na.action = na.omit))
+
+# playground
+summary(aov(trans_value ~ CO2 * TOS * Irrigation * Cultivar + 
+                          Error(RingID/CO2:Irrigation:TOS),
+                          data = small.testdf,
+                          na.action = na.omit))
+
+# "old" approach via HalfRingId:
+# "Within" effects are the same
+# Effects of CO2 and TOS less pronounced compared to RingID approach
+# Irrigation effect not sigificant in both cases
+summary(aov(trans_value ~ CO2 * TOS * Irrigation * Cultivar + 
+                          Error(my.HalfRingID/Cultivar),
+                          data = small.testdf,
+                          na.action = na.omit))
+# For 2007
+small.testdf <- yj.homogeneous[yj.homogeneous$Year == 2007 &
+                               #yj.homogeneous$TOS == "TOS1" &  
+                               yj.homogeneous$TrialID == "Horsham" &
+                               yj.homogeneous$Stage == "DC90" &
+                               yj.homogeneous$variable == "Yield..g.m2.", ]
+
+nested.aov.2007 <- summary(aov(trans_value ~ CO2 * Irrigation * TOS * Cultivar + 
+                          Error(RingID/CO2: TOS),
+                          data = small.testdf,
+                          na.action = na.omit))
+
+# Interpretaton of results table
+# Error RingID: Factors that are unique per ring are analysed here
+# TOS is not meaningful in this table
+
+# Error RingID:CO2:TOS: Factors that differ in the rings
+# TOS result is taken from here
+
+# Error: Within elements that change wihtin the final level of nesting
+# Cultivar effect is taken from here
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++===
+# Nested AOV model
+# Rings are split for TOS in 2007
+# Rings are split for irrigation in 2008/2009
+
+# 2007   aov(trans_value ~ CO2 * Irrigation * TOS * Cultivar + 
+#           Error(RingID / TOS)
+# 2008/9 aov(trans_value ~ CO2 * Irrigation * TOS * Cultivar + 
+#           Error(RingID / Irrigation)
+# ++++++++++++++++++++++++++++++++++++++++++++++++++===
+
+aov.out <- dlply(yj.homogeneous[yj.homogeneous$variable %in% parameters_to_keep, ],
+                 .(TrialID, Year, variable, Stage),
+                 function(x) {
+                 
+                 currentYear <- unique(x$Year)
+                 
+                 if (currentYear == 2008 | currentYear == 2009) {
+                 print(unique(as.character(
+                        interaction(x$TrialID, x$Year, x$variable, x$Stage))))
+                 print("2008/2009")
+                 out <- try(summary(
+                   aov(trans_value ~ CO2 * Irrigation * TOS * Cultivar + 
+                       Error(RingID / Irrigation),
+                       data = x,
+                       na.action = na.omit)))
+                 } else { # this is 2007
+                 print(unique(as.character(
+                        interaction(x$TrialID, x$Year, x$variable, x$Stage))))
+                 print("2007")
+                 out <- try(summary(
+                   aov(trans_value ~ CO2 * TOS * Irrigation * Cultivar + 
+                       Error(RingID / TOS),
+                       data = x,
+                       na.action = na.omit)))
+                 }
+                 if (inherits(out, "try-error")) {
+                      # print("problem with fit")
+                      aov.out <- "not testable"} 
+                 else {
+                      # print("successful fit")
+                      aov.out <- out}
+                 })
+sink("Horsham_Anova_results_after_transformation.txt")
+        print(aov.out)
+sink()
+
+write.table(yj.homogeneous, 
+            file = "homogeneous_data.csv", 
+            sep = ",", row.names = FALSE)
+
+#testcase for p-value-extraction
+my.testcase <- aov.out[4]
+str(my.testcase)
+str(my.testcase[[1]][1])
+
+names(my.testcase)
+
+# extract splot-split-plot tables
+my.testcase[[1]]$'Error: RingID' # gives the first table
+my.testcase[[1]]$'Error: RingID:TOS'
+my.testcase[[1]]$'Error: Within'
+
+# extract rownames of the tables
+str(my.testcase[[1]]$'Error: RingID'[[1]])
+rownames(my.testcase[[1]]$'Error: RingID'[[1]])
+
+# extract p-values
+my.testcase[[1]]$'Error: RingID'[[1]]$'Pr(>F)'
+
+
+# create a dummy table to accept p-values
+dummy.RingID <- data.frame()
+
+aov.details.out <- ldply(aov.out[1:6],
+    function(x) {
+                
+    if (x[[1]] == "not testable") {
+       TableA
+       pvalues.RingID <- c(rep(NA, 10))
+       return(pvalues.RingID)
+   } else {
+   
+   
+      return(pvalues)}
+})
+
+
+
+
+
+
+# Special analysis of 1000 grains weight
+# due to potential dramas with homogeneity of variances
+# 1000.Grain.Wt..g.
+yj.1000 <- yj.homogeneous[yj.homogeneous$variable == "1000.Grain.Wt..g.", ]
+
+yj.1000.means.sd <- ddply(yj.1000,
+                     .(CO2, TOS, Irrigation, Cultivar),
+                     summarise,
+                     mean = mean(value, na.rm = TRUE),
+                     sd   = sd(value, na.rm = TRUE),
+                     trans_mean = mean(trans_value, na.rm = TRUE),
+                     trans_sd = sd(trans_value, na.rm = TRUE))
+
+# check correlation between means and standard deviations
+p <- ggplot(yj.1000.means.sd, aes(x = mean, y = sd))
+     p <- p + geom_point(aes(colour = CO2, shape = TOS))
+     #p <- p + geom_smooth()
+     p <- p + geom_smooth(method = "lm", colour = "red")
+     p <- p + labs(title = "1000 grains weight, Horsham")
+     p <- p + theme_bw()
+p
+ggsave(file = "Correlation_mean_sd_1000grain_weight.pdf")
+p <- ggplot(yj.1000.means.sd, aes(x = trans_mean, y = trans_sd))
+     p <- p + geom_point(aes(colour = CO2, shape = TOS))
+     #p <- p + geom_smooth()
+     p <- p + geom_smooth(method = "lm", colour = "red")
+     p <- p + labs(title = "1000 grains weight, Horsham")
+     p <- p + theme_bw()
+p
+
+my.lm <- lm(sd ~ mean, data = yj.1000.means.sd )
+summary(my.lm)
+
+# new April 1, 2014
+# analysis of relative effects
+
+para.rel.analysis <- c("1000.Grain.Wt..g._rel_diff_to_aCO2",
+                       "AR.Dry.wt.area..g.m2._rel_diff_to_aCO2",
+                       "Yield..g.m2._rel_diff_to_aCO2", 
+                       "Grains.m2_rel_diff_to_aCO2")
+
+# Levene for the relative data
+rel.after.tests <- ddply(yj.rel.melt[yj.rel.melt$parameter %in% para.rel.analysis & yj.rel.melt$variable == "value", ],
+                   .(parameter, TrialID, Year, variable, Stage),
+                   function(x) {
+                 
+                 out <- try(leveneTest(value ~ TOS * Irrigation * Cultivar,
+                                    data = x))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      lev.out <- NA} 
+                 else {
+                      print("successful fit")
+                      lev.out <- out$`Pr(>F)`[1]}
+                names(lev.out) <- "Levene_p_value"
+                return(lev.out)
+                 })
+
+rel.after.tests$Leve_fail <- FALSE
+rel.after.tests$Leve_fail[rel.after.tests$Levene_p_value < 0.05 ] <- TRUE
+
+# Anova for relative data
+aov.rel.out <- dlply(yj.rel.melt[yj.rel.melt$parameter %in% para.rel.analysis & yj.rel.melt$variable == "value", ],
+                 .(parameter, TrialID, Year, variable, Stage),
+                 function(x) {
+                 
+                 out <- try(summary(aov(value ~ TOS * Irrigation * Cultivar,
+                                    data = x,
+                                    na.action = na.omit)))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      aov.out <- "not testable"} 
+                 else {
+                      print("successful fit")
+                      aov.out <- out}
+                 })
+sink("Horsham_Anova_rel_results.txt")
+        print(aov.rel.out)
+sink()
+
+my.aov <- aov(value ~ TOS * Irrigation * Cultivar,
+         data = yj.rel.melt[yj.rel.melt$parameter == "Emergence.Plants.m2_rel_diff_to_aCO2" & 
+         yj.rel.melt$variable == "value",])
+summary(my.aov)
+str(summary(my.aov))
+summary(my.aov)[[1]][["Pr(>F)"]]
+
+
+aov.rel.details.out <- ddply(yj.rel.melt[yj.rel.melt$parameter %in% para.rel.analysis & yj.rel.melt$variable == "value",],                   
+
+                 .(parameter, TrialID, Year, variable, Stage),
+                 function(x) {
+                 
+                 out <- try(aov(
+                       value ~ TOS * Irrigation * Cultivar,
+                                    data = x,
+                                    na.action = na.omit))
+                    
+                 if (inherits(out, "try-error")) {
+                      print("problem with fit")
+                      aov.out <- c(rep(NA, 7))
+                      names(aov.out) <- c("TOS", "Irrigation", "Cultivar", "TOS:Irrigation", "TOS:Cultivar", "Irrigation:Cultivar", "TOS:Irrigation:Cultivar")
+                      return(aov.out)} 
+                 else {
+                      print("successful fit")
+                      my.terms <- rownames(summary(out)[[1]])[1:7]
+                      aov.out <- summary(out)[[1]][["Pr(>F)"]][1:7]
+                      names(aov.out) <- my.terms
+                      return(aov.out)
+                      }
+                 })
+names(aov.rel.details.out) <- gsub(" ", "", names(aov.rel.details.out))
+
+aov.rel.details.out.melt <- melt(aov.rel.details.out,
+                             id = names(aov.rel.details.out)[1:5])
+
+names(aov.rel.details.out.melt)[4] <- "rel"
+write.table(aov.rel.details.out.melt,
+         file = "Anova_p_values_rel_data.csv",
+         row.names = FALSE, sep = ",", na = "")

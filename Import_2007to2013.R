@@ -142,11 +142,20 @@ get.rid.of <- c("DC31\\.", "DC65\\.", "DC90\\.")
 # out <- sapply(get.rid.of, function(x) {
 #                           gsub(x, "", df.melt$variable)})
 
+# keep a copy of the data
+df.melt.orig <- df.melt
+
+# df.melt <- df.melt.orig
+
+# sort(unique(df.melt$variable))
+
 # manually
 df.melt$variable <- gsub(get.rid.of[1], "", df.melt$variable)
 df.melt$variable <- gsub(get.rid.of[2], "", df.melt$variable)
 df.melt$variable <- gsub(get.rid.of[3], "", df.melt$variable)
 df.melt$variable <- as.factor(df.melt$variable)
+
+# write.table(df.melt, file = "my_names.csv", row.names = FALSE, sep = ",")
 
 # reshape the data to wide format, merging all data for all stages under their common parameter name
 # if there are typos in the parameter names, the same parameter will be put into several columns

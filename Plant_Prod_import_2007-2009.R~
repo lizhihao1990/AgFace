@@ -1,0 +1,71 @@
+# Import the Plant Production data 2007 - 2009
+# based on the revised Plant Production file sent by Glenn on August 22, 2013
+
+require(xlsx)
+require(ggplot2)
+require(plyr)
+require(reshape)
+
+# set working directory
+setwd("~/AgFace/2007")
+
+# df <- read.xlsx("Markus_2007-2009_22Aug2013.xlsx",
+#                 sheetName = "Sheet1")
+
+df <- read.csv("Markus_2007-2009_22Aug2013.csv",
+                header = TRUE)
+
+
+# correct wrong-imported columns
+
+# get the column names that start with DC30, DC65, or DC90
+DC30names <- names(df)[grep("^DC30", names(df))]
+DC65names <- names(df)[grep("^DC65", names(df))]
+DC90names <- names(df)[grep("^DC90", names(df))]
+
+# strip the DC out of the names
+DC30names <- gsub("^DC30.", "", DC30names)
+DC65names <- gsub("^DC65.", "", DC65names)
+DC65names <- gsub("^DC65.", "", DC65names)
+
+# DC65 names that are not in DC30
+DC65names[!(DC65names %in% DC30names)]
+
+# standard factors/descriptors
+# column "Crop" is missing from DC65 (position 12)
+# DC30 has an additional empty column at position 14
+# DC65 has same names as DC90
+df.orig <- df
+
+# getting rid of the unnecessary columns
+df$Crop <- NULL
+df$NA.  <- NULL
+df$Bay  <- NULL
+df$Bay.1  <- NULL
+df$CO2.TOS.Irr.Cultivar.DATABASE.1 <- NULL
+df$RingID.1 <- NULL
+df$CO2.TOS.Irr.Cultivar.DATABASE.4 <- NULL
+df$RingID.4 <- NULL
+
+DC30.common.names <- names(df)[1:16]
+DC65.common.names <- names(df)[56:71]
+DC90.common.names <- names(df)[112:127]
+
+# get the data for the DC's'
+DC30 <- df[, 1:55]
+DC65 <- df[, 56:111]
+DC90 <- df[, 112:ncol(df)]
+
+names(DC30) <- gsub("^DC30.", "", names(DC30))
+names(DC65) <- gsub("^DC65.", "", names(DC65))
+names(DC90) <- gsub("^DC90.", "", names(DC90))
+
+names(DC65) <- gsub(".1$", "", names(DC65))
+names(DC65) <- gsub(".2$", "", names(DC65))
+
+DC3065 <- merge(DC30, DC65,
+                all = TRUE)
+write.table(DC3065,
+            file = "DC30and65.csv",
+            row.names = F,
+            sep = ",")
