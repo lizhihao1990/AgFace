@@ -1,6 +1,0 @@
-# Walpeup overviews
-
-Walpeup <- Agface[Agface$TrialID == "Walpeup", ]
-
-sort(unique(Walpeup$PlotID))
-sort(unique(Walpeup$Cultivar))
