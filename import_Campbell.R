@@ -35,7 +35,7 @@ sensor.names <- c("RawCh_SGA2_1_Avg", "RawAh_SGA2_1_Avg", "RawBh_SGA2_1_Avg", "R
 "IR_Narrow_Std_6_", "IR_Narrow_Std_7_", "IR_Narrow_Std_8_",
 "IR_Horz_Min_1_", "IR_Horz_Min_2_", "IR_Horz_Max_1_",
 "IR_Horz_Max_2_", "IR_Horz_Avg_1_", "IR_Horz_Avg_2_",
-"IR_Horz_Std_1_", "IR_Horz_Std_2_")
+"IR_Horz_Std_1_", "IR_Horz_Std_2_", "Soil_Avg_1_", "Soil_Avg_2_", "Soil_Avg_3_", "Soil_Avg_4_", "Soil_Avg_5_")
 
 GetSensorID <- function(sensor.name) {
    if (grepl("SGA2_", sensor.name) == TRUE) {

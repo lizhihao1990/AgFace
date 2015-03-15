@@ -14,6 +14,9 @@ daily_weather_2011_2012$Date <- as.POSIXct(daily_weather_2011_2012$Date,
                                            tz = "Australia/Melbourne")
 daily_weather_2011_2012$Year <- as.numeric(format(daily_weather_2011_2012$Date, "%Y"))
 
+# use a simpler name
+df <- daily_weather_2011_2012
+
 # limit data to 2011 & 2012, Horsham and Wheat
 df <- df[(df$Year == 2011 | df$Year == 2012) & 
           df$Location == "Horsham" & 

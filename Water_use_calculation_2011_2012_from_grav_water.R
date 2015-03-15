@@ -73,6 +73,10 @@ write.table(profile.sum.average.no_treatments,
             file = "Initial_and_final_mean_vol_soil_water_content_2011_2012.csv",
             sep = ",", row.names = FALSE)
 
+save(profile.sum.average.tin, profile.sum.average.no_treatments,
+     file = "Tin_soilwater_use_2011_2012.RData",
+     compress = TRUE)
+
 # calculate water use
 # initial minus final soil moisture deltaW
 deltaW <- ddply(profile.sum,

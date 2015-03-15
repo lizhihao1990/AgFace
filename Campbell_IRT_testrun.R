@@ -140,7 +140,7 @@ MyRecentPlot <- function(para, hours, data, logger = NA, yscale_min = NA, yscale
     return(p)
 }
 
-my.time.to.plot <- 1024
+my.time.to.plot <- 96
 my.max <- 40
 a <- MyRecentPlot("IR_Narrow_Avg_7_", my.time.to.plot, df, 
              logger = "SYS2",
@@ -171,3 +171,5 @@ p <- ggplot(df, aes(x = IR_Horz_Avg_1_, y = IR_Narrow_Avg_7_))
   p <- p + scale_y_continuous(limits = c(0, 60))
 p
 
+# change of IRT position on March 9, 13:15 (logger time).
+# Now pointed at peas

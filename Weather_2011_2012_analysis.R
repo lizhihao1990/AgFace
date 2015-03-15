@@ -170,6 +170,18 @@ water.per.period$Period <- sub("\\.", "_", water.per.period$Period)
 water.per.period$Period <- sub("\\.", "_to_", water.per.period$Period)
 water.per.period <- water.per.period[, c("Period", "Rainfall_received", "Irrigation_received", "Water_received")]
 
+# add additional information to the water.per.period data frame
+water.per.period$Cultivar <- NA
+water.per.period$Cultivar[grep("SSRT65", water.per.period$Period)] <- "SSR T65"
+water.per.period$Start.period <- c("DC65", 
+                                   rep("sowing", 3), 
+                                   "DC65", 
+                                   rep("sowing", 4))
+water.per.period$End.period <- c("harvest", "DC31", "DC65", "harvest", "harvest", "DC31", "DC31", "DC65", "harvest")
+to.factor <- c("Period", "Cultivar", "Start.period", "End.period")
+
+water.per.period[, names(water.per.period) %in% to.factor] <- lapply(water.per.period[, names(water.per.period) %in% to.factor], as.factor)
+
 write.table(water.per.period,
             file = "Water_received_per_period_tin.csv",
             sep = ",", row.names = FALSE)
@@ -193,6 +205,10 @@ principal.dates$DCEvent <- factor(principal.dates$DCEvent,
                                        "DC31\nElongation", 
                                        "DC65\nAnthesis", 
                                        "DC90\nHarvest"))
+
+save(water.per.period, my.irri, principal.dates,
+     file = "Tin_2011_2012_water_irri_per_period.RData",
+     compress = TRUE)
 
 # figures
 p <- ggplot(df, aes(x = DOY, y = RainTot..mm.))
@@ -266,7 +282,7 @@ g <- arrangeGrob(p,
                           gp = gpar(fontface = "bold", fontsize = 18)))
 g
 
-fig.temperature.ribbon <- g
+#fig.temperature.ribbon <- g
                
 
 df.melt <- melt(df,
@@ -300,6 +316,7 @@ p
 
 fig.temperature.lines <- p
 
+library(gtable)
 # assembling the combined rainfall and temperature figure
 a <- ggplotGrob(fig.rainfall)
 # adding panel indicators
