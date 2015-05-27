@@ -39,6 +39,19 @@ df <- rbind(df2011, df2012)
 # checking the number of samples - one per day for two years
 nrow(df) / 2
 
+# data cleaning:
+# Minimum temperature of -40 is unrealistic
+df$Min.AirTemp..degC.[df$Min.AirTemp..degC. == -40 &
+                      !is.na(df$Min.AirTemp..degC.)] <- NA
+# Discarding maximum temperatures above 45°C
+df$Max.AirTemp..degC.[df$Max.AirTemp..degC. > 45 &
+                      !is.na(df$Max.AirTemp..degC.)] <- NA
+
+# dates with missing minimum temperature
+# 2011-02-05
+# 2012-02-01 # all data missing
+# 2012-02-02 # all data missing
+
 # prepare for efficient plotting
 # getting rid of Time - it is all 9:00 anyway
 df$Time <- NULL

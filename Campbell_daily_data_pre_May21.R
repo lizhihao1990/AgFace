@@ -1,22 +1,26 @@
 # Analysis of Campbell sensors
 
-setwd("~/AgFace/2014/Campbell_logger/Transmissions")
+setwd("~/AgFace/2015/Campbell_logger/Transmissions")
 
 
 library(plyr)
-library(ggplot2)
 source("~/AgFace/R_scripts/import_Campbell.R")
 
-df <- CampbellAllImport(log.interval = "5Min", logger.name = "SYS2")
+df <- CampbellAllImport(log.interval = "Daily",
+                        logger.folder = "~/AgFace/2015/Campbell_logger/logger_data_pre-May21/logger_data_2015-05-21_17_15_before_5min_table")
 
-setwd("~/AgFace/2014/Campbell_logger/Transmissions")
+##the.folder <- "/run/user/1000/gvfs/dav:host=agface.dnsdynamic.net,ssl=true,user=markus,prefix=%2Fowncloud%2Fremote.php%2Fwebdav/Shared/current_season_data/Campbell_loggers/logger_data"
+##the.folder <- "~/AgFace/2014/Campbell_logger/Transmissions/2014_10_28_sapflow_install/logger_data"
+#the.folder <- "~/AgFace/2014/Campbell_logger/logger_data"
+#setwd(the.folder)
 
-# my.names <- paste(my.header, my.descript, sep = "_")
-#names(df) <- my.header
+#my.header   <- read.csv("SYS8_5Min.dat", skip = 1)
+#my.header   <- names(my.header)
+#my.descript <- read.csv("SYS8_5Min.dat", skip = 3)
+#my.descript <- names(my.descript)
+#df <- read.csv("SYS8_5Min.dat", skip = 4, na.strings = "NAN")
 
-#names(df) <- gsub("\\.", "_", names(df))
-
-#df$TIMESTAMP <- as.POSIXct(df$TIMESTAMP, tz = "Australia/Melbourne")
+setwd("~/AgFace/2015/Campbell_logger/Transmissions")
 
 library(reshape2)
 df.melt <- melt(df, id.vars = c("SYSTEM", "TIMESTAMP"))
@@ -33,7 +37,7 @@ Sys.setenv(TZ='Australia/Melbourne')
 #suncalc(d, Lat = -37.423003, Long = 143.90, UTC = TRUE)
 
 Agface.loc <- matrix(c(142.114477, -37.423003), nrow = 1)
-Creswick.loc <- matrix(c(143.899631, -37.422249), nrow = 1)
+
 my.hour <- 60 * 60
 
 NoDaylightSaving <- function(my.time) {
@@ -84,12 +88,9 @@ ephemeral.times$sunrise <- ephemeral.times$sunrise - my.hour
 ephemeral.times$sunset  <- ephemeral.times$sunset  - my.hour
 
 
-# IRTs that were doing something meaningful from Feb 4 on
-# Horizontal 1: head wheat
-# Narrow 4 bean
-# Narrow 7 bean
 
 MyRecentPlot <- function(para, hours, data, logger = NA, yscale_min = NA, yscale_max = NA) {
+    require(ggplot2)
     # function to plot a specific parameter for the last x hours
     
     # determine if all logger data should be used or only one specific logger
@@ -140,36 +141,8 @@ MyRecentPlot <- function(para, hours, data, logger = NA, yscale_min = NA, yscale
     return(p)
 }
 
-my.time.to.plot <- 1096
-my.max <- 40
-a <- MyRecentPlot("IR_Narrow_Avg_7_", my.time.to.plot, df, 
-             logger = "SYS2",
-             yscale_min = 0, yscale_max = my.max)
-b <- MyRecentPlot("IR_Narrow_Avg_4_", my.time.to.plot, df, 
-             logger = "SYS2",
-             yscale_min = 0, yscale_max = my.max)
-c <- MyRecentPlot("IR_Horz_Avg_1_", my.time.to.plot, df, 
-             logger = "SYS2",
-             yscale_min = 0, yscale_max = my.max)
+my.time.to.plot <- 230
 
-# assemble figures 
-a <- ggplotGrob(a)
-b <- ggplotGrob(b)
-c <- ggplotGrob(c)
+MyRecentPlot("Batt_volt_Min", my.time.to.plot, df, yscale_min = NA, yscale_max = NA)
+#ggsave(file = "Min_battery_May12_to_May21_SYS4_out_of_juice.pdf", width = 9, height = 7)
 
-library(gridExtra)
-pdf(file = "IRT_glasshouse.pdf", width = 19, height = 17)
-grid.draw(rbind(a, b, c, size = "first"))
-#grid.arrange(a, b, c, d, e, ncol = 1)
-dev.off()
-
-p <- ggplot(df, aes(x = IR_Horz_Avg_1_, y = IR_Narrow_Avg_7_))
-  p <- p + geom_abline(intercept = 0, slope = 1, colour = "red", linetype = "dashed")
-  p <- p + geom_point(alpha = 0.01)
-  p <- p + geom_smooth(method = "lm")
-  p <- p + scale_x_continuous(limits = c(0, 60))
-  p <- p + scale_y_continuous(limits = c(0, 60))
-p
-
-# change of IRT position on March 9, 13:15 (logger time).
-# Now pointed at peas

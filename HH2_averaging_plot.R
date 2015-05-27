@@ -23,6 +23,21 @@ Key.dates <- c(DC30.date, DC65.date, DC90.date)
 p <- ggplot(mydata[mydata$Crop == "Wheat" &
                    !is.na(mydata$Crop), ], 
             aes(x = Day, y = mV))
+ p <- p + stat_summary(aes(colour = CO2, shape = Tube_treatment, linetype = Tube_treatment), 
+                        fun.data = "mean_sdl", mult = 1, 
+                        position = position_jitter(width = 0.25), alpha = 0.5)
+  p <- p + geom_vline(xintercept = as.numeric(Key.dates), colour = "grey")
+#  p <- p + geom_smooth(aes(colour = CO2, linetype = Tube_treatment), se = FALSE)
+  p <- p + facet_grid(Depth ~ Cultivar)
+  p <- p + theme_bw()
+  p <- p + labs(linetype = "Water supply",
+                x = "Date",
+                y = "Soil moisture expressed as raw milliVolts, default calibration [mV]")
+p
+
+p <- ggplot(mydata[mydata$Crop == "Wheat" &
+                   !is.na(mydata$Crop), ], 
+            aes(x = Day, y = mV))
   p <- p + stat_summary(aes(colour = CO2, shape = Tube_treatment, linetype = Tube_treatment), 
                         fun.data = "mean_sdl", mult = 1, geom = "linerange", 
                         position = position_jitter(width = 0.25), alpha = 0.5)

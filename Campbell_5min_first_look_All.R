@@ -4,6 +4,7 @@ setwd("~/AgFace/2014/Campbell_logger/Transmissions")
 
 
 library(plyr)
+library(grid)
 source("~/AgFace/R_scripts/import_Campbell.R")
 
 df <- CampbellAllImport(log.interval = "5Min")
@@ -204,9 +205,9 @@ library(plyr)
 plot.list <- dlply(df.melt,
                    .(SYSTEM, variable),
                    function(x) MyPlot(x))
-pdf(file = "Plots_SYS8.pdf")
-print(plot.list)
-dev.off()
+#pdf(file = "Plots.pdf")
+#print(plot.list)
+#dev.off()
 
 # sapflow calculations
 # list of sapflow parameters
@@ -308,43 +309,15 @@ MyRecentPlot <- function(para, hours, data, logger = NA, yscale_min = NA, yscale
     return(p)
 }
 
-my.time.to.plot <- 512
+my.time.to.plot <- 166
 
-MyRecentPlot("Sapflow_SGA2_1_Avg", my.time.to.plot, df, yscale_min = 0, yscale_max = 2.5)
-
-a <- MyRecentPlot("Sapflow_SGA2_1_Avg", my.time.to.plot, df, logger = "SYS8", yscale_min = 0, yscale_max = 2.5)
-a
-b <- MyRecentPlot("dT_SGA2_1_Avg", my.time.to.plot, df, logger = "SYS8")
-f <- MyRecentPlot("Kshapp_SGA2_1_Avg", my.time.to.plot, df, logger = "SYS8", yscale_min = 0.2, yscale_max = 0.45)
-
-MyRecentPlot("Kshapp_SGA2_1_Avg", 36, df, logger = "SYS8", yscale_min = 0.2, yscale_max = 0.45)
-MyRecentPlot("RawCh_SGA2_1_Avg", 72, df, logger = "SYS8", yscale_min = 0.1, yscale_max = 0.2)
-e <- MyRecentPlot("RawCh_SGA2_1_Avg", my.time.to.plot, df, logger = "SYS8", yscale_min = 0.1, yscale_max = 0.2)
-e
-d <- MyRecentPlot("Qr_SGA2_1_Avg", my.time.to.plot, df, logger = "SYS8", yscale_min = NA, yscale_max = NA)
-c <- MyRecentPlot("Qf_SGA2_1_Avg", my.time.to.plot, df, logger = "SYS8", yscale_min = -0.025, yscale_max = 0.025)
+MyRecentPlot("Sapflow_SGA2_1_Avg", my.time.to.plot, df, yscale_min = -100, yscale_max = 100)
+MyRecentPlot("Sapflow_SGA2_2_Avg", my.time.to.plot, df, yscale_min = -1, yscale_max = 25)
+MyRecentPlot("Kshapp_SGA2_1_Avg", 36, df, yscale_min = 0.2, yscale_max = 0.45)
+MyRecentPlot("Kshapp_SGA2_2_Avg", 36, df, yscale_min = 0.2, yscale_max = 0.45)
 
 
-# assemble figures for System8
-a <- ggplotGrob(a)
-b <- ggplotGrob(b)
-c <- ggplotGrob(c)
-d <- ggplotGrob(d)
-e <- ggplotGrob(e)
-f <- ggplotGrob(f)
-
-library(gridExtra)
-pdf(file = "Sapflow_SYS8.pdf", width = 19, height = 17)
-grid.draw(rbind(c, d, b, e, f, a, size = "first"))
-#grid.arrange(a, b, c, d, e, ncol = 1)
-dev.off()
-
-
-MyRecentPlot("Sapflow_SGA2_2_Avg", my.time.to.plot, df, yscale_min = 0, yscale_max = 10)
-MyRecentPlot("Kshapp_SGA2_1_Avg", my.time.to.plot, df, yscale_min = -0.05, yscale_max = 0.4)
-
-#dev.new()
-a <- MyRecentPlot("Sapflow_SGA2_1_Avg", my.time.to.plot, df, yscale_min = 0, yscale_max = 8)
+a <- MyRecentPlot("Sapflow_SGA2_1_Avg", my.time.to.plot, df, yscale_min = 0, yscale_max = 45)
 # dev.new()
 b <- MyRecentPlot("dT_SGA2_1_Avg", my.time.to.plot, df)
 # dev.new()
@@ -369,3 +342,6 @@ pdf(file = "Sapflow_example_All.pdf", width = 19, height = 17)
 grid.draw(rbind(c, d, e, b, a, size = "first"))
 #grid.arrange(a, b, c, d, e, ncol = 1)
 dev.off()
+
+
+

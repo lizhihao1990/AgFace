@@ -1,4 +1,4 @@
-# Analysis of Campbell sensors
+# Analysis of Campbell sensors hourly data
 
 setwd("~/AgFace/2014/Campbell_logger/Transmissions")
 
@@ -7,7 +7,7 @@ library(plyr)
 library(ggplot2)
 source("~/AgFace/R_scripts/import_Campbell.R")
 
-df <- CampbellAllImport(log.interval = "5Min", logger.name = "SYS2")
+df <- CampbellAllImport(log.interval = "Hourly", logger.name = "SYS3")
 
 setwd("~/AgFace/2014/Campbell_logger/Transmissions")
 
@@ -84,11 +84,6 @@ ephemeral.times$sunrise <- ephemeral.times$sunrise - my.hour
 ephemeral.times$sunset  <- ephemeral.times$sunset  - my.hour
 
 
-# IRTs that were doing something meaningful from Feb 4 on
-# Horizontal 1: head wheat
-# Narrow 4 bean
-# Narrow 7 bean
-
 MyRecentPlot <- function(para, hours, data, logger = NA, yscale_min = NA, yscale_max = NA) {
     # function to plot a specific parameter for the last x hours
     
@@ -119,7 +114,7 @@ MyRecentPlot <- function(para, hours, data, logger = NA, yscale_min = NA, yscale
     if (is.na(yscale_min) == TRUE) {
 	    my.max <- max(my.data.clean[, my.para], na.rm = TRUE)
 	    my.min <- min(my.data.clean[, my.para], na.rm = TRUE)
-	    } else {
+    } else {
 	    my.max <- yscale_max
 	    my.min <- yscale_min
 	    }
@@ -140,16 +135,17 @@ MyRecentPlot <- function(para, hours, data, logger = NA, yscale_min = NA, yscale
     return(p)
 }
 
-my.time.to.plot <- 1096
-my.max <- 40
-a <- MyRecentPlot("IR_Narrow_Avg_7_", my.time.to.plot, df, 
-             logger = "SYS2",
+my.time.to.plot <- 330
+my.max <- 0.3
+
+a <- MyRecentPlot("Soil_Avg_1_", my.time.to.plot, df, 
+             logger = "SYS3",
              yscale_min = 0, yscale_max = my.max)
-b <- MyRecentPlot("IR_Narrow_Avg_4_", my.time.to.plot, df, 
-             logger = "SYS2",
+b <- MyRecentPlot("Soil_Avg_2_", my.time.to.plot, df, 
+             logger = "SYS3",
              yscale_min = 0, yscale_max = my.max)
-c <- MyRecentPlot("IR_Horz_Avg_1_", my.time.to.plot, df, 
-             logger = "SYS2",
+c <- MyRecentPlot("Soil_Avg_3_", my.time.to.plot, df, 
+             logger = "SYS3",
              yscale_min = 0, yscale_max = my.max)
 
 # assemble figures 
@@ -158,18 +154,7 @@ b <- ggplotGrob(b)
 c <- ggplotGrob(c)
 
 library(gridExtra)
-pdf(file = "IRT_glasshouse.pdf", width = 19, height = 17)
+#pdf(file = "IRT_glasshouse.pdf", width = 19, height = 17)
 grid.draw(rbind(a, b, c, size = "first"))
 #grid.arrange(a, b, c, d, e, ncol = 1)
-dev.off()
-
-p <- ggplot(df, aes(x = IR_Horz_Avg_1_, y = IR_Narrow_Avg_7_))
-  p <- p + geom_abline(intercept = 0, slope = 1, colour = "red", linetype = "dashed")
-  p <- p + geom_point(alpha = 0.01)
-  p <- p + geom_smooth(method = "lm")
-  p <- p + scale_x_continuous(limits = c(0, 60))
-  p <- p + scale_y_continuous(limits = c(0, 60))
-p
-
-# change of IRT position on March 9, 13:15 (logger time).
-# Now pointed at peas
+#dev.off()

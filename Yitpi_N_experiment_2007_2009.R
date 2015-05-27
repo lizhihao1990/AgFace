@@ -11,7 +11,7 @@ setwd("~/AgFace/Nitrogen_2007_2009")
 # load workspace created by the "Plant_Production_2007_2009.R" script
 load("../Plant_Production/Plant_Production_data_02.RData")
 
-# the workspace has remnants fromt the general data import and data preparation
+# the workspace has remnants from the general data import and data preparation
 # getting rid of those to start with a clean plate.
 
 # objects and data to keep in the workspace (just the data and the data in "long" format)
@@ -21,6 +21,7 @@ to_keep <- c("df", "df.melt")
 rm(list = ls()[!(ls() %in% to_keep)])
 
 # load libraries
+require(plyr)
 require(reshape)
 require(ggplot2)
 require(nlme)
@@ -362,3 +363,60 @@ my.N.barplots <- dlply(yitpi.melt[yitpi.melt$variable %in% my_N_variables, ],
 pdf("Yitpi_N_barplots.pdf")
         print(my.N.barplots)
 dev.off()
+
+# calculate difference between "X.N_Plant..AG.biomass." at DC31 and DC65 and between DC65 and DC90
+
+DiffBetGrowthPeriod <- function(data, para, first.period = "DC30", second.period = "DC65", third.period = "DC90") {
+  # Calculates the difference between a given parameter at two different growth stages
+ 
+  # get rid of other growth period
+  #data <- data[data$Stage %in% c(first.period, second.period), ]
+  
+  # get a handle on the column that holds the paramter in question
+  my.column <- which(names(data) == para)
+  value.first.period <- data[data$Stage == first.period, my.column]
+ 
+  value.second.period <- data[data$Stage == second.period, my.column]
+
+  value.third.period <- data[data$Stage == third.period, my.column]
+  
+  my.diff.second.minus.first <- value.second.period - value.first.period
+  my.diff.third.minus.second <- value.third.period - value.second.period
+  # assemble a result table
+  my.table <- data.frame(first.period = value.first.period,
+                         second.period = value.second.period,
+                         third.period = value.third.period,
+                         Diff.second.first = my.diff.second.minus.first,
+                         Diff.third.second = my.diff.third.minus.second)
+  my.name.second.minus.first <- paste(second.period, first.period, sep = "_minus_")
+  my.name.third.minus.second <- paste(third.period, second.period, sep = "_minus_")
+  names(my.table) <- c(first.period, second.period, third.period, my.name.second.minus.first, my.name.third.minus.second)
+  return(my.table)
+}
+
+# using plyr to split the data and apply the DiffBetGrowthPeriod function
+require(plyr)
+
+out <- ddply(yitpi,
+            .(Year, RingID, HalfRingID, CO2, Irrigation, TOS, Cultivar, N_treat),
+            function(x) DiffBetGrowthPeriod(x, para = "N_Leaf..g.m2."))
+
+write.table(out, file = "Differences_between_growth_stages.csv",
+            sep = ",", row.names = FALSE, na = "")
+
+# data checks
+# N leaf (g m-2) should be %Nleaf * leaf biomass (g m-2) /100
+
+my.nleaf.g.m2 <- with(yitpi, (X.N_Leaf * Dry.wt.leaf.in.AR.sample..g.m2.) /100)
+summary(my.nleaf.g.m2)
+
+# compare with N_Leaf..g.m2.
+summary(yitpi$N_Leaf..g.m2.)
+summary(yitpi$X.N_Leaf)
+
+# N uptake into ABG biomass (or whatever it is called) should be the sum of N Leaf (per m2), and N stem (m2)
+
+my.uptake <- with(yitpi[yitpi$Stage == "DC30", ], N_Leaf..g.m2. + N_Stem..g.m2.)
+my.uptake
+# comapre with AG.total.N.uptake..g.m2.
+yitpi$AG.total.N.uptake..g.m2.[yitpi$Stage == "DC30"]

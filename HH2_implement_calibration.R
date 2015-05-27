@@ -63,6 +63,31 @@ DC90.date <- as.Date("2014-11-19")
 Key.dates <- c(DC30.date, DC65.date, DC90.date)
 
 #figures
+
+p <- ggplot(mydata[mydata$Crop == "Wheat" &
+                   !is.na(mydata$Crop), ], 
+            aes(x = Day, y = volSWC.recal))
+  
+  p <- p + stat_summary(aes(colour = CO2, shape = Tube_treatment, linetype = Tube_treatment), 
+                        fun.data = "mean_sdl", mult = 1, geom = "line",
+                        position = position_jitter(width = 0.25), alpha = 0.5)
+  p <- p + geom_vline(xintercept = as.numeric(Key.dates), colour = "grey")
+  p <- p + stat_summary(aes(colour = CO2, shape = Tube_treatment, linetype = Tube_treatment), 
+                        fun.data = "mean_sdl", mult = 1, 
+                        position = position_jitter(width = 0.25), alpha = 0.5)
+    p <- p + facet_grid(Depth ~ Cultivar)#, scale = "free_y")
+  p <- p + theme_bw()
+  p <- p + labs(linetype = "Water supply",
+                shape = "Water supply",
+                x = "Date",
+                y = expression("Soil moisture based on soil- and depth-specific calibration ["~m^3*m^-3*"]"))
+p
+
+fig.swc.calibrated.nonsmothed <- p
+
+ggsave(file = "Agface_soil_moisture_2014.pdf",
+       width = 11, height = 8)
+
 p <- ggplot(mydata[mydata$Crop == "Wheat" &
                    !is.na(mydata$Crop), ], 
             aes(x = Day, y = volSWC.recal))
@@ -79,6 +104,31 @@ p <- ggplot(mydata[mydata$Crop == "Wheat" &
 p
 
 fig.swc.calibrated.timecourse <- p
+
+
+p <- ggplot(mydata[mydata$Crop == "Lentil" &
+                   !is.na(mydata$Crop), ], 
+            aes(x = Day, y = volSWC.recal))
+  
+  p <- p + stat_summary(aes(colour = CO2, shape = Tube_treatment, linetype = Tube_treatment), 
+                        fun.data = "mean_sdl", mult = 1, geom = "line",
+                        position = position_jitter(width = 0.25), alpha = 0.5)
+  p <- p + geom_vline(xintercept = as.numeric(Key.dates), colour = "grey")
+  p <- p + stat_summary(aes(colour = CO2, shape = Tube_treatment, linetype = Tube_treatment), 
+                        fun.data = "mean_sdl", mult = 1, 
+                        position = position_jitter(width = 0.25), alpha = 0.5)
+    p <- p + facet_grid(Depth ~ Cultivar)#, scale = "free_y")
+  p <- p + theme_bw()
+  p <- p + labs(linetype = "Water supply",
+                shape = "Water supply",
+                x = "Date",
+                y = expression("Soil moisture based on soil- and depth-specific calibration ["~m^3*m^-3*"]"))
+p
+
+fig.swc.calibrated.nonsmothed.lentil <- p
+
+ggsave(file = "Agface_soil_moisture_2014_Lentil.pdf",
+       width = 11, height = 8)
 
 
 p <- ggplot(mydata[mydata$Crop == "Wheat" &

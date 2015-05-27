@@ -38,6 +38,25 @@ df <- merge(df, PlotRingCult,
 df.incl.bulk <- df
 df <- df[!is.na(df.2$Cultivar), ]
 
+# re-order data frame
+
+df.Silver <- df[, c("Year", "Ring", "Plot", "CO2_treatment", "Irrigation", "TOS", "Cultivar", "Depth", "Sample_time", "RingPos", "Sample.quality", "Volumetric.water.content")]
+
+df.Silver <- df.Silver[df.Silver$Cultivar == "Silverstar" |
+                       df.Silver$Cultivar == "SSR T65", ]
+# export overall file
+write.table(df,
+            file = "Soil_moisture_content_2011_2012.csv",
+            sep = ",", row.names = FALSE, na = "")
+
+names(df.Silver) <- gsub("Volumetric.water.content", "Volumetric.water.content_mm_mm-2", names(df.Silver))
+# sort by depth
+df.Silver <- df.Silver[with(df.Silver, order(Year, Ring, Cultivar, Depth)), ]
+# export a file for Silverstar/SSRT only
+write.table(df.Silver,
+            file = "Soil_moisture_content_2011_2012_Silverstar_tin.csv",
+            sep = ",", row.names = FALSE, na = "")
+
 # calculate sowing or harvest soil moisture
 library(plyr)
 

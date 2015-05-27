@@ -1,0 +1,35 @@
+#' An import function for all DAT glasshouse climate files from a folder
+#' 
+#' Imports and processes all Glasshouse DAT files from a folder.
+#' @param folder Filename of the DAT file. Defaults to current folder
+#' GlasshouseFolderImport(folder)
+
+
+# function to import all DAT files from a folder
+GlasshouseFolderImport <- function(folder = ".") {
+ 
+ if (folder != ".") {
+ # Get info on current folder
+ cur.folder <- getwd()
+ message("Switching to folder: ", folder) 
+ 
+ # switch folder 
+ setwd(folder)
+ }
+ # get a list of file names
+ my.files.list <- list.files(pattern = "\\.DAT$")
+
+ my.list <- lapply(my.files.list, GlasshouseFileImport) 
+ names(my.list) <- my.files.list
+ 
+ # merge all data frames
+ merged.data <- do.call("rbind", my.list)
+ 
+ 
+ # go back to previous folder
+ if (folder != ".") {
+ setwd(cur.folder)
+ }
+ 
+ return(merged.data)
+}

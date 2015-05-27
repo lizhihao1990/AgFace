@@ -20,7 +20,7 @@ df$DOY <- as.numeric(as.character(format(df$Date, "%j")))
 
 # principal_dates 2011 and 2012
 # sowing/harvest dates are the same for rainfed and supplemental water treatments
-principal.dates <- read.csv("../../2011_2012/Principal_dates/Principal_dates.csv")
+principal.dates <- read.csv("../../2011_2012/Principal_dates/Principal_dates_2011_2012.csv")
 principal.dates$Date <- as.POSIXct(principal.dates$Date, tz = "Australia/Melbourne")
 principal.dates$Year <- as.numeric(as.character(format(principal.dates$Date, "%Y")))
 principal.dates$DOY <- as.numeric(as.character(format(principal.dates$Date, "%j")))
@@ -336,3 +336,119 @@ pdf(file = "Rainfall_and_temperature_2011_2012.pdf", width = 13, height = 8)
 grid.draw(rbind(a, b, size = "first"))
 #grid.arrange(a, b, c, d, e, ncol = 1)
 dev.off()
+
+# calculate Tav and Tamp for Apsim model
+# from http://www.apsim.info/Portals/0/OtherProducts/tav_amp.pdf
+#Amp is obtained by averaging the mean daily temperature of each month over the entire data period resulting in
+#twelve mean temperatures, and then subtracting the minimum of these values from the maximum.
+#Tav is
+#obtained by averaging the twelve mean monthly temperatures
+
+# add month information to data frame
+df$Month <- format(df$Date, "%m")
+df$Month <- as.factor(df$Month)
+df$YearMonth <- interaction(df$Year, df$Month)
+# calculate daily mean temp per month over entire data period
+monthly.mean.temp <- ddply(df,
+                           .(YearMonth),
+                           summarise,
+                           mean.temp = mean(Ave.AirTemp..degC., na.rm = TRUE)
+                           )
+# get minimum per year
+mean.amplitude <- ddply(monthly.mean.temp,
+                       .(),
+                       summarise,
+                       coldest.month = min(mean.temp, na.rm = TRUE),
+                       hottest.month = max(mean.temp, na.rm = TRUE),
+                       amp = hottest.month - coldest.month,
+                       mean = mean(mean.temp))
+
+# export daily weather data in a format compatible with Apsim
+# need 
+# site year   day  radn   maxt   mint   rain    evap
+
+to.keep <- c("Year", "DOY", "Ave.GSR..W.m.2.", "Max.AirTemp..degC.", "Min.AirTemp..degC.", "RainTot..mm.", "Evap..mm.")
+
+out.Apsim <- df[, names(df) %in% to.keep]
+out.Apsim$site <- "Horsham.Agface"
+# convert Global radiation 9irradiance) to exposure
+# From BOM:  Irradiance is a measure of the rate of energy received per unit area, and has units of watts per square metre (W/m2), where 1 watt (W) is equal to 1 Joule (J) per second. Radiant exposure is a time integral (or sum) of irradiance. Thus a 1 minute radiant exposure is a measure of the energy received per square metre over a period of 1 minute. Therefore a 1-minute radiant exposure = mean irradiance (W/m2) x 60(s), and has units of joule(s) per square metre (J/m2). A half-hour radiant exposure would then be the sum of 30 one-minute (or 1800 one-second) radiant exposures. For example: a mean irradiance of 500 W/m2 over 1 minute yields a radiant exposure of 30 000 J/m2 or 30 KJ/m2. 
+
+# We have average irradiance over 24 hours = 86400 s
+# Exposure is then 86400 times the daily average
+# 182 * 86400 / 1000000 to get to MJ m^-2
+seconds.in.a.day <- 24 * 60 * 60
+conv.to.mega <- 1000000
+out.Apsim$radn <- out.Apsim$Ave.GSR..W.m.2. * seconds.in.a.day / conv.to.mega
+out.Apsim$Ave.GSR..W.m.2. <- NULL
+
+# re-order output file
+out.Apsim <- out.Apsim[, c("site", "Year", "DOY", "radn", "Max.AirTemp..degC.", "Min.AirTemp..degC.", "RainTot..mm.", "Evap..mm.")]
+
+# rename output file parameters
+names(out.Apsim) <- c("site", "year", "day", "radn", "maxt", "mint", "rain", "evap")
+
+# add "vp" column for vapour pressure in hPa
+out.Apsim$vp <- NA
+
+out.Apsim.melt <- melt(out.Apsim,
+                       id = c("site", "year", "day"))
+
+# dates with missing data
+# 2011-02-05 # min temperature missing
+# 2012-02-01 # all data missing
+# 2012-02-02 # all data missing
+
+# gap filling. Using the data from Polkemmet station as reference
+# if missing data in df, then grap the corresponding data from Polkemmet
+
+# import Polkemmet data in Apsim format
+polk.bom <- "../HORSHAM_POLKEMMET_RD_079023.met"
+polk.header <- scan(file = polk.bom,
+                        skip = 21, what = "character",
+                        strip.white = TRUE,
+                        n = 9)
+polk <- read.fwf(polk.bom, 
+         c(4, 4, 7, 6, 6, 6, 6, 6, 8), # Width of the columns. -2 means drop those columns
+         skip = 23,                # Skip the first line (contains header here)
+         header = FALSE,
+         col.names= polk.header,
+         strip.white = TRUE)
+polk$code <- NULL
+polk$site <- "PolkemmetRd"
+# get rid of unnecesary years
+keep.years <- c(2011, 2012)
+polk <- polk[polk$year %in% keep.years, ]
+
+polk.melt <- melt(polk,
+                  id = c("site", "year", "day"))
+
+# move both data frames so that they match
+both <- rbind(polk.melt, out.Apsim.melt)
+fill <- dcast(both,
+              year + day + variable ~ site)
+
+# gap filling
+# done 1:1, no conversion/correlation between the stations
+fill$Horsham.Agface[is.na(fill$Horsham.Agface)] <- fill$PolkemmetRd[is.na(fill$Horsham.Agface)]
+
+# re-shuffle filled data frame
+fill$PolkemmetRd <- NULL
+
+out.Apsim2 <- dcast(fill,
+                    year + day ~ variable)
+
+# export output file
+write.table(out.Apsim2,
+            file = "Horsham_Agface_2011_2012.met",
+            sep = " ", row.names = FALSE, na = "", quote = FALSE)
+#Apsim expects a space-sparated, but aligned file
+# using sink() to achieve that
+sink(file = "Sink_Horsham_Agface_2011_2012.met")
+print(out.Apsim2, na.print = "")
+sink()
+
+# export dates and amounts of irrigation
+write.csv(my.irri,
+          file = "Irrigation_dates_and_amounts_2011_2012.csv",
+          sep = ",", row.names = FALSE, na = "")

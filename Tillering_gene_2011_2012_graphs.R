@@ -511,6 +511,24 @@ p
 
 fig.percent.N.grains <- p
 
+N.grains.means <- CalcRes(df.melt, "X.N_Grain..scan..0..", c("CO2", "Environment", "Stage", "Cultivar"))
+
+N.grains.mean.change_perc <- N.grains.means$mean[N.grains.means$Cultivar == "SSR T65"] / 
+                         N.grains.means$mean[N.grains.means$Cultivar == "Silverstar"] * 100 -100
+
+N.grains.perc <- CalcPerc(N.grains.means, c("CO2", "Stage", "Environment"))
+N.grains.perc
+
+N.grains.percCO2 <- CalcPercCO2(N.grains.means, c("Cultivar", "Stage", "Environment"))
+N.grains.percCO2
+
+mean(N.grains.percCO2$Percent_change_in_eCO2, na.rm = TRUE)
+
+ddply(N.grains.percCO2,
+      .(Cultivar),
+      summarise,
+      my.mean.Perc.Change = mean(Percent_change_in_eCO2))
+
 ggsave(file = "Percent_N_grains_se.pdf", 
        width = my.width, height = my.height, 
        units = "cm")
@@ -760,6 +778,12 @@ percN.perc
 
 percN.percCO2 <- CalcPercCO2(percN.means, c("Cultivar", "Stage", "Environment"))
 percN.percCO2
+
+percN.flowering <- percN.percCO2[percN.percCO2$Stage == "DC65", ]
+ddply(percN.flowering,
+      .(Cultivar),
+      summarise,
+      my.mean.percNleaf.change.under.eCO2 =  mean(Percent_change_in_eCO2))
 
 ddply(percN.percCO2,
       .(Cultivar),

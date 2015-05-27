@@ -1,0 +1,10 @@
+Package: GlasshouseClimateImport
+Title: What the Package Does (one line, title case)
+Version: 0.0.0.9000
+Authors@R: person("Markus", "Löw", email = "m.loew@unimelb.edu.au", role = c("aut", "cre"))
+Author: Markus Löw <m.loew@unimelb.edu.au>
+Maintainer: Markus Löw <m.loew@unimelb.edu.au>
+Description: Import climate data from Creswick glasshouses
+Depends: R (>= 3.2.0)
+License: GPL
+LazyData: true
