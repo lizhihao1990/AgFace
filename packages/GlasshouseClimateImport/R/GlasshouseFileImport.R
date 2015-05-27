@@ -1,7 +1,11 @@
-GlasshouseFileImport <- function (data) {
- # Function to import DAT files from Creswick Glasshouses
+# Function to import DAT files from Creswick Glasshouses
  # Author: Markus Löw
  # Date: May 2015
+ #' Imports and processes a DAT file.
+ #' @param file Filename of the DAT file.
+ #' GlasshouseFileImport(file)
+
+GlasshouseFileImport <- function (data) {
 
 # +++++++++++++++++++++++++
 # import the file

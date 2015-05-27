@@ -1,7 +1,8 @@
 #' An import function for all DAT glasshouse climate files from a folder
-#' 
+#' Author: Markus Löw
+#' Date: May 2015
 #' Imports and processes all Glasshouse DAT files from a folder.
-#' @param folder Filename of the DAT file. Defaults to current folder
+#' @param foldername of the DAT files. Defaults to current folder
 #' GlasshouseFolderImport(folder)
 
 
