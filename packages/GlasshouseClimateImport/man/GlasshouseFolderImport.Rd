@@ -7,10 +7,18 @@
 GlasshouseFolderImport(folder = ".")
 }
 \arguments{
-\item{folder}{Filename of the DAT file. Defaults to current folder
-GlasshouseFolderImport(folder)}
+\item{foldername}{of the DAT files. Defaults to current folder.}
+}
+\value{
+One data frame containing the data from all DAT files in the foldername
 }
 \description{
+Author: Markus Löw
+Date: May 2015
 Imports and processes all Glasshouse DAT files from a folder.
+}
+\examples{
+GlasshouseFolderImport()
+GlasshouseFolderImport("C:/Mydata/Climate")
 }
 
