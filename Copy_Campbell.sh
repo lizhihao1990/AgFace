@@ -20,4 +20,9 @@ sleep 60
 # copy the latest files to the Agface folder
 cp -r ~/ownCloud/Shared/current_season_data/Campbell_loggers/logger_data ~/AgFace/2015/Campbell_logger/
 
+# search replace SYS3 in the data file for SYS7
+# by calling another script
+cd ~/AgFace/2015/Campbell_logger/logger_data
+
+~/AgFace/R_scripts/Campbell_sed_replace_SYS7.sh
 exit

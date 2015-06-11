@@ -45,7 +45,8 @@ sensor.names <- c("Batt_volt_Min", "RawCh_SGA2_1_Avg", "RawAh_SGA2_1_Avg", "RawB
 "IR_Narrow_Std_6_", "IR_Narrow_Std_7_", "IR_Narrow_Std_8_",
 "IR_Horz_Min_1_", "IR_Horz_Min_2_", "IR_Horz_Max_1_",
 "IR_Horz_Max_2_", "IR_Horz_Avg_1_", "IR_Horz_Avg_2_",
-"IR_Horz_Std_1_", "IR_Horz_Std_2_", "Soil_Avg_1_", "Soil_Avg_2_", "Soil_Avg_3_", "Soil_Avg_4_", "Soil_Avg_5_")
+"IR_Horz_Std_1_", "IR_Horz_Std_2_", "Soil_Avg_1_", "Soil_Avg_2_", "Soil_Avg_3_", "Soil_Avg_4_", "Soil_Avg_5_",
+"PAR_Avg", "Temp_Avg_1_", "Temp_Avg_2_", "Hum_Avg_1_", "Hum_Avg_2_")
 
 GetSensorID <- function(sensor.name) {
  # Sap flow sensors SGA2
@@ -58,6 +59,14 @@ GetSensorID <- function(sensor.name) {
    out <- data.frame(FullName = sensor.name,
                      SensorID = "1",
                      SensorName = "Batt_volt_Min")
+   return(out)
+   }
+   
+   if (grepl("PAR_Avg", sensor.name) == TRUE) {
+   
+   out <- data.frame(FullName = sensor.name,
+                     SensorID = "1",
+                     SensorName = "PAR_Avg")
    return(out)
    }
    

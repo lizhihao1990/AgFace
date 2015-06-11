@@ -1,6 +1,7 @@
+# TDR data
 # Analysis of Campbell sensors
 
-setwd("~/AgFace/2015/Campbell_logger/Transmissions")
+setwd("~/AgFace/2015/Campbell_logger/Transmissions/TDR_step_down")
 
 library(ggplot2)
 library(plyr)
@@ -11,14 +12,9 @@ library(reshape2)
 
 source("~/AgFace/R_scripts/import_Campbell.R")
 
-df <- CampbellAllImport(log.interval = "5Min")
+df <- CampbellAllImport(log.interval = "Hourly", logger.folder = "~/AgFace/2015/Campbell_logger/Transmissions/TDR_step_down")
 
-setwd("~/AgFace/2015/Campbell_logger/Transmissions")
-
-# limit data to April 2015 and later
-my.start.date <- as.POSIXct("2015-04-01", tz = "Australia/Melbourne")
-
-df <- df[df$TIMESTAMP >= my.start.date, ]
+setwd("~/AgFace/2015/Campbell_logger/Transmissions/TDR_step_down")
 
 df.melt <- melt(df, id.vars = c("SYSTEM", "TIMESTAMP"))
 #my.out <- lapply(df.melt$variable, GetSensorID)
@@ -108,7 +104,7 @@ ephemeral.times <- ddply(my.calendar.days,
 #ephemeral.times$sunset  <- ephemeral.times$sunset  - my.hour
 
 MyPlot <- function(data) {
-     my.label <- unique(data$SensorName)
+     my.label <- unique(data$variable)
      p <- ggplot(data, aes(x = TIMESTAMP, y = value))
      p <- p + geom_line()
      p <- p + labs(y = my.label)
@@ -116,95 +112,14 @@ MyPlot <- function(data) {
      return(p)
 }
 library(plyr)
-plot.list <- dlply(df.melt,
-                   .(SYSTEM, SensorName),
-                   function(x) MyPlot(x))
 
-#pdf(file = "Plots.pdf")
-#print(plot.list)
-#dev.off()
+my.time.to.plot <- 40
 
-
-#df.2 <- df.2[df.2$SYSTEM != "SYS3", ]
-df.2 <- df.2
-
-my.time.to.plot <- 36
-
-MyRecentPlot("IR_Narrow_Avg", my.time.to.plot, df.2, 
-             yscale_min = 0, yscale_max = 25,
+after <- as.POSIXct("2015-05-27 18:00:00")
+before <- as.POSIXct("2015-05-29 12:00:00")
+MyRecentPlot("Soil_Avg", my.time.to.plot, df.2[df.2$TIMESTAMP > after &
+                                               df.2$TIMESTAMP < before,], 
+             yscale_min = 0, yscale_max = 0.1,
              sensor.colour = TRUE, cartesian = TRUE)
-
-sap <- MyRecentPlot("Sapflow_Avg", my.time.to.plot, df.2, 
-             yscale_min = -1, yscale_max = 20, 
-             sensor.colour = TRUE, cartesian = FALSE)
-sap
-
-dT <- MyRecentPlot("dT_Avg", my.time.to.plot, df.2, 
-             yscale_min = NA, yscale_max = NA, 
-             sensor.colour = TRUE, cartesian = FALSE)
-dT
-
-Qr <- MyRecentPlot("Qr_Avg", my.time.to.plot, df.2, 
-             yscale_min = 0.03, yscale_max = 0.08, 
-             sensor.colour = TRUE, cartesian = FALSE)
-Qr
-
-Qf <- MyRecentPlot("Qf_Avg", my.time.to.plot, df.2, 
-             yscale_min = NA, yscale_max = NA, 
-             sensor.colour = TRUE, cartesian = FALSE)
-Qf
-
-Kshapp.time.to.plot <- 6
-Ka <- MyRecentPlot("Kshapp_Avg", Kshapp.time.to.plot, df.2, 
-             yscale_min = 0, yscale_max = 0.45, 
-             sensor.colour = TRUE, cartesian = FALSE)
-Ka
-
-Ka <- MyKshPlot(df.2, ylim = c(-1, 1))
-Ka
-             
-#MyRecentPlot("Sapflow_SGA2_2_Avg", my.time.to.plot, df, yscale_min = -1, yscale_max = 25)
-#MyRecentPlot("Kshapp_SGA2_1_Avg", 36, df, yscale_min = 0.2, yscale_max = 0.45)
-#MyRecentPlot("Kshapp_SGA2_2_Avg", 36, df, yscale_min = 0.2, yscale_max = 0.45)
-
-
-a <- MyRecentPlot("Sapflow_SGA2_1_Avg", my.time.to.plot, df, yscale_min = 0, yscale_max = 45)
-
-b <- MyRecentPlot("dT_SGA2_1_Avg", my.time.to.plot, df)
-
-c <- MyRecentPlot("Qf_SGA2_1_Avg", my.time.to.plot, df, yscale_min = NA, yscale_max = NA)
-
-d <- MyRecentPlot("Qr_SGA2_1_Avg", my.time.to.plot, df, yscale_min = NA, yscale_max = NA)
-
-
-e <- MyRecentPlot("RawCh_SGA2_1_Avg", my.time.to.plot, df, yscale_min = NA, yscale_max = NA)
-# dev.new()
-f <- MyRecentPlot("Pin_SGA2_1_Avg", my.time.to.plot, df, yscale_min = 0.04, yscale_max = 0.06)
-
-a <- ggplotGrob(a)
-b <- ggplotGrob(b)
-c <- ggplotGrob(c)
-d <- ggplotGrob(d)
-e <- ggplotGrob(e)
-f <- ggplotGrob(f)
-
-
-pdf(file = "Sapflow_example_All.pdf", width = 19, height = 17)
-grid.draw(rbind(c, d, e, b, a, size = "first"))
-#grid.arrange(a, b, c, d, e, ncol = 1)
-dev.off()
-
-the.date <- as.POSIXct("2015-05-09 00:00:00", tz = "Australia/Melbourne")
-
-the.end <- df.2[df.2$TIMESTAMP < the.date, ]
-
-p <- ggplot(df.2[df.2$TIMESTAMP > the.date, ],
-            aes(x = TIMESTAMP, y = Sapflow_Avg))
-  p <- p + geom_point()
-  p <- p + facet_grid(SYSTEM ~ .)
-p
-
-MyRecentPlot("Batt_volt_Min", my.time.to.plot, df.2, 
-             yscale_min = NA, yscale_max = NA,
-             sensor.colour = TRUE, cartesian = TRUE)
-#ggsave(file = "Battery_Voltage.pdf", width = 9, height = 7)
+ggsave(file = "Soil_drying_SYS7.pdf", 
+       width = 9, height = 7)

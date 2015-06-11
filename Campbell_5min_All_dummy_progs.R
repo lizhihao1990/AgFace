@@ -11,7 +11,7 @@ library(reshape2)
 
 source("~/AgFace/R_scripts/import_Campbell.R")
 
-df <- CampbellAllImport(log.interval = "5Min")
+df <- CampbellAllImport(log.interval = "5Min", logger.folder = "~/AgFace/2015/Campbell_logger/Transmissions/2015-05-28_data_download")
 
 setwd("~/AgFace/2015/Campbell_logger/Transmissions")
 
@@ -108,7 +108,7 @@ ephemeral.times <- ddply(my.calendar.days,
 #ephemeral.times$sunset  <- ephemeral.times$sunset  - my.hour
 
 MyPlot <- function(data) {
-     my.label <- unique(data$SensorName)
+     my.label <- unique(data$variable)
      p <- ggplot(data, aes(x = TIMESTAMP, y = value))
      p <- p + geom_line()
      p <- p + labs(y = my.label)
@@ -117,7 +117,7 @@ MyPlot <- function(data) {
 }
 library(plyr)
 plot.list <- dlply(df.melt,
-                   .(SYSTEM, SensorName),
+                   .(SYSTEM, variable),
                    function(x) MyPlot(x))
 
 #pdf(file = "Plots.pdf")
@@ -130,8 +130,8 @@ df.2 <- df.2
 
 my.time.to.plot <- 36
 
-MyRecentPlot("IR_Narrow_Avg", my.time.to.plot, df.2, 
-             yscale_min = 0, yscale_max = 25,
+MyRecentPlot("Sapflow_Avg", my.time.to.plot, df.2, 
+             yscale_min = -1, yscale_max = 100, logger = "SYS2",
              sensor.colour = TRUE, cartesian = TRUE)
 
 sap <- MyRecentPlot("Sapflow_Avg", my.time.to.plot, df.2, 

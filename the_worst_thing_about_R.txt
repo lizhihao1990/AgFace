@@ -1,0 +1,2 @@
+quote:
+Bow Cowgill said, "The best thing about R is that it was written by statisticians. The worst thing about R is that it was written by statisticians."

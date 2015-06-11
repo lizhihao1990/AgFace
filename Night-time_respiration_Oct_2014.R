@@ -52,7 +52,7 @@ comment.rep$Treatment <- gsub("V", "", comment.rep$Treatment)
 comment.rep$Treatment <- as.numeric(as.character(comment.rep$Treatment))
 comment.rep[, 1:3] <- lapply(comment.rep[, 1:3], as.character)
 
-comment.plyr <- ddply(xxx,
+comment.plyr <- ddply(comment.rep,
                      .(Treatment),
                      function(x) {
                           V1 <- x$V1
@@ -251,3 +251,6 @@ my.aov.yitpi.wet <- aov(Photo ~ CO2_treatment,
                      data = nightres.cast[nightres.cast$Treatment == "wet" &
                                           nightres.cast$Cultivar == "Yitpi", ])
 summary(my.aov.yitpi.wet)
+
+nightres.2014.10.02 <- nightres.cast
+

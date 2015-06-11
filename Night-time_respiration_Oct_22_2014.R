@@ -259,3 +259,5 @@ my.aov.yitpi.wet <- aov(Photo ~ CO2_treatment,
                      data = nightres.cast[nightres.cast$Treatment == "wet" &
                                           nightres.cast$Cultivar == "Yitpi", ])
 summary(my.aov.yitpi.wet)
+
+nightres.2014.10.22 <- nightres.cast

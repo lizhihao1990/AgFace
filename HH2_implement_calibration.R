@@ -209,7 +209,10 @@ fig.swc.wheat.timecourse.no_smooth.free_y <- p
 p <- ggplot(mydata[mydata$Crop == "Lentil" &
                    !is.na(mydata$Crop), ], 
             aes(x = Day, y = volSWC.recal))
-  p <- p + geom_smooth(aes(colour = CO2, linetype = Tube_treatment), se = TRUE)
+  #p <- p + geom_smooth(aes(colour = CO2, linetype = Tube_treatment), se = TRUE)
+  p <- p + stat_summary(aes(colour = CO2, linetype = Tube_treatment), 
+                        fun.data = "mean_sdl", mult = 1, geom = "line", 
+                        alpha = 0.5)
   p <- p + stat_summary(aes(colour = CO2, shape = Tube_treatment, linetype = Tube_treatment), 
                         fun.data = "mean_cl_normal", geom = "linerange", mult = 1,
                         position = position_jitter(width = 0.25), alpha = 0.5)
@@ -243,6 +246,44 @@ p <- ggplot(mydata[mydata$Crop == "Wheat" &
                 y = expression("Soil moisture based on soil- and depth-specific calibration ["~m^3*m^-3*"]"))
 p
 fig.average.profile.per.week <- p
+
+# average profile for whole season
+p <- ggplot(mydata[mydata$Crop == "Wheat" &
+                   !is.na(mydata$Crop), ], 
+            aes(y = volSWC.recal, x = Depth))
+  p <- p + stat_summary(fun.data = "mean_sdl", mult = 1,
+                        aes(colour = CO2, linetype = Tube_treatment, shape = Cultivar),
+                        geom = "line")
+  p <- p + stat_summary(fun.data = "mean_sdl", mult = 1,
+                        aes(colour = CO2, linetype = Tube_treatment, shape = Cultivar))
+  p <- p + coord_flip()
+  p <- p + scale_x_reverse()
+  p <- p + facet_grid(. ~ Cultivar)
+  p <- p + theme_bw()
+  p <- p + labs(linetype = "Water supply",
+                x = "Depth [mm]",
+                y = expression("Soil moisture based on soil- and depth-specific calibration ["~m^3*m^-3*"]"))
+p
+fig.average.profile.per.season.wheat <- p
+
+# average profile for whole season
+p <- ggplot(mydata[mydata$Crop == "Lentil" &
+                   !is.na(mydata$Crop), ], 
+            aes(y = volSWC.recal, x = Depth))
+  p <- p + stat_summary(fun.data = "mean_sdl", mult = 1,
+                        aes(colour = CO2, linetype = Tube_treatment, shape = Cultivar),
+                        geom = "line")
+  p <- p + stat_summary(fun.data = "mean_sdl", mult = 1,
+                        aes(colour = CO2, linetype = Tube_treatment, shape = Cultivar))
+  p <- p + coord_flip()
+  p <- p + scale_x_reverse()
+  p <- p + facet_grid(. ~ Cultivar)
+  p <- p + theme_bw()
+  p <- p + labs(linetype = "Water supply",
+                x = "Depth [mm]",
+                y = expression("Soil moisture based on soil- and depth-specific calibration ["~m^3*m^-3*"]"))
+p
+fig.average.profile.per.season.lentil <- p
 
 # average profile for last few weeks
 p <- ggplot(mydata[mydata$Crop == "Wheat" &
@@ -429,4 +470,40 @@ print(persp3D(z = my.list["Wheat.Scout.aCO2.wet"][[1]],
         clab = "Scout - Yitpi [m3 m-3]"))
 dev.off()
 
+# stats on wheat soil moisture
+library(nlme)
+mydata$Ring <- as.factor(mydata$Ring)
 
+lme.wheat <- lme(volSWC.recal ~ CO2 * Cultivar * Depth * Tube_treatment * Weekname,
+               random = ~ 1 | Ring / Weekname,
+               data = mydata[mydata$Crop == "Wheat", ],
+               na.action = na.omit)
+anova(lme.wheat)
+lme.lentil <- lme(volSWC.recal ~ CO2 * Cultivar,
+               random = ~ 1 | Weekname / Ring,
+               data = mydata[mydata$Crop == "Lentil", ],
+               na.action = na.omit)
+anova(lme.lentil)
+
+aov(volSWC.recal ~ CO2 * Cultivar * Tube_treatment, data = mydata)
+
+MyLme <- function(data) {
+ my.lme <- lme(volSWC.recal ~ CO2 * Cultivar * Tube_treatment,
+               random = ~ 1 | Ring,
+               data = data,
+               na.action = na.omit)
+ return(anova(my.lme))
+}
+
+dlply(mydata,
+     .(Crop),
+     function(x) MyLme(x))
+     
+# figures for science meeting
+pdf(file = "Soil_moisture_figures_Science_meeting.pdf",
+    width = 11, height = 8)
+print(fig.swc.wheat.timecourse.no_smooth.free_y)
+print(fig.lentil.timecourse.free_y)
+print(fig.average.profile.per.season.wheat)
+print(fig.average.profile.per.season.lentil)
+dev.off()

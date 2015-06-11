@@ -1,0 +1,11 @@
+Package: CampbellLogger
+Title: Imports, combines Campbell logger files
+Version: 0.0.0.1
+Authors@R: person("Markus", "Löw", email = "m.loew@unimelb.edu.au", role = c("aut", "cre"))
+Description: Import individual Campbell Scientific *.dat files from a CR1000 data logger (specific to the AgFace experiment), or imports and merge multiple files. Calculates sunrise and sunset at AgFace location for any given date.
+Depends: R (>= 3.0.0)
+License: GPL-2
+LazyData: true
+Imports: plyr, reshape2, ggplot2, sp, maptools
+Maintainer: Markus Löw <m.loew@unimelb.edu.au>
+URL: https://github.com/MarkusLoew/AgFace/tree/master/packages/CampbellLogger
