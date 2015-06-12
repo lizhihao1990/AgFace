@@ -33,8 +33,6 @@ df.cast <- CampbellCast(df)
 # calculate sunrise and sunset times for all dates in df
 ephemeral.times <- CampbellSunriseSunset(df)
 
-# specify the number of recent hours to use in the figure
-
 # create figure for the last 48 hours, for the soil moisture sensors,
 # implement a y-axis range from 0 to 0.35, 
 # identify each sensor per system by colour, 
