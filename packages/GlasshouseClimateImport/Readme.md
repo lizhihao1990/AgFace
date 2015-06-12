@@ -9,15 +9,31 @@ See
 
 for details on the functions provided by this package.
 
-Example session:
+### Installation
+To enable installations of packages straight from github use:
+```{r}
+	install.packages("devtools")
+```
 
-	# test code for GlasshouseAllImport
+Then
+```{r}
+	install_github("MarkusLoew/AgFace/packages/GlasshouseClimateImport")
+```
+
+### Example session
+
+```{r}
+	# test code for package GlasshouseClimateImport
+	
+	# load library
 	library(GlasshouseClimateImport)
 	
-	#setwd("~/AgFace/2015/Glasshouses")
+	# set the working directory to the folder with the files
+	# setwd("~/AgFace/2015/Glasshouses")
 
 	df <- GlasshouseFolderImport()
-
+        
+        # to visualise the data 
 	library(reshape2)
 	# re-melting the data
 	my.data.all.melt <- melt(df,
@@ -42,3 +58,4 @@ Example session:
 	pdf(file = "Glasshouse_figures.pdf", width = 9, height = 9)
 	print(my.plots)
 	dev.off()
+```
