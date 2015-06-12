@@ -2,6 +2,7 @@
 #' @param file filename of the dat file
 #' @param time.zone Time zone, defaults to "Australia/Melbourne"
 #' @param checkduplicates Check for and remove duplicates from the file. Logical, defaults to TRUE.
+#' @return data frame with imported *.dat file
 
 CampbellFileImport <- function(file, 
                                time.zone = "Australia/Melbourne", 

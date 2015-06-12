@@ -15,6 +15,9 @@ MyKshPlot(data, date = Sys.time(), para = "Kshapp_Avg", ylim = c(0, 1))
 
 \item{ylim}{y-axis range as vector. Defautls to \code{c(0, 1)}}
 }
+\value{
+Returns a ggplot object.
+}
 \description{
 Version of MyRecentPlot with changes specific to visualising the thermal conductance constant \code{KSh} for a given spa flow gauge installation. Visualises Ksh over the time from 4:00 to 6:00 hrs for the given date with a y-axis range from 0 to 1.
 }

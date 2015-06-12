@@ -1,15 +1,16 @@
 # test code for GlasshouseAllImport
-
+library(GlasshouseClimateImport)
 setwd("~/AgFace/2015/Glasshouses")
 
-df <- GlasshouseAllImport()
+df <- GlasshouseFolderImport()
 
+library(reshape2)
 # re-melting the data
 my.data.all.melt <- melt(df,
                          id.vars = "TIME")
 
 # plot
-require(ggplot2)
+library(ggplot2)
 MyPlotFunction <- function(data) {
     my.name <- sort(unique(data$variable))
     p <- ggplot(data, aes(x = TIME, y = value))
@@ -19,7 +20,7 @@ MyPlotFunction <- function(data) {
     return(p)
 }
 
-require(plyr)
+library(plyr)
 my.plots <- dlply(my.data.all.melt,
                  .(variable),
                  function(x) MyPlotFunction(x))

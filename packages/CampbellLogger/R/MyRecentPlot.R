@@ -1,17 +1,19 @@
-#' Visualise recent data measured by an AgFace Campbell Scientific logger over a selected Time Period
+#' Visualise recent data measured by an AgFace Campbell Scientific logger over the last hours.
 #'
 #' @description Visualise a selected parameter from a Campbell logger file for a given time window starting from the latest timestamp in the data frame. All sensors that measure this parameter on each logger system will be shown. Sensors are identified by their SensorID and logger system ID.
-#' @param para Name of the parameter to be visualised. See \code{sensor.names} for a list of parameters. Works with non-missing data only.
+#' @param para Name of the parameter to be visualised. See \code{\link{GetSensorID}} for a list of \code{sensor.names}. Works with non-missing data only.
 #' @param hours Number of recent hours over which to visualise data. Starts from last timestamp in the data frame.
 #' @param data name of the data frame.
 #' @param logger Only visualise data from the specified logger system. Defaults to NA to use data from all logger systems.
-#' @param yscale_min Numeric. Lower limit of the y-axis. Defaults to NA to visualise the full range of values.
-#' @param yscale_max Numeric. Upper limit of the y-axis. Defaults to NA to visualise the full range of values.
+#' @param yscale_min Numeric. Lower limit of the y-axis. Defaults to NA to visualise the full range of values. When used, \code{yscale_max} has to be specified as well.
+#' @param yscale_max Numeric. Upper limit of the y-axis. Defaults to NA to visualise the full range of values. \code{yscale_min} can not be NA.
 #' @param cartesian Logical. Discard data outside of the specified y-axis range. Defaults to TRUE.
 #' @param sensor.colour Logical. Identify each SensorID per logger system with a unique colour. Defaults to TRUE.
-#' @param ephemeral.time Logical. If true, an object named \code{ephemeral.times}. Default is \code{TRUE}. The object ephemeral.times contains sunrise and sunset information as provided by the function \code{CampbellSunriseSunset}.
+#' @param ephemeral.time Logical. If FALSE, shading for night time will not be added to the plot. Defaults to TRUE
+#' @param ephemeral.object Name of the object with sunrise and seunset informationation. If an object name is provided, it has to have the same structure as the output of \code{link{CampbellSunriseSunset}}, i.e. provide a Date, sunrise, and sunset column for each date in the \code{data} range. Defaults to \code{ephemeral.times}. Only evaluated when \code{ephemeral.time} is TRUE.
+#' @return Returns a ggplot object.
 
-MyRecentPlot <- function(para, hours, data, logger = NA, yscale_min = NA, yscale_max = NA, cartesian = TRUE, sensor.colour = FALSE, ephemeral.time = TRUE) {
+MyRecentPlot <- function(para, hours, data, logger = NA, yscale_min = NA, yscale_max = NA, cartesian = TRUE, sensor.colour = FALSE, ephemeral.time = TRUE, ephemeral.object = ephemeral.times) {
     # require(ggplot2) # will be loaded when the package is loaded
     
     # determine if all logger data should be used or only one specific logger
@@ -61,11 +63,17 @@ MyRecentPlot <- function(para, hours, data, logger = NA, yscale_min = NA, yscale
     
     # put the figure together
     p <- ggplot2::ggplot(data, ggplot2::aes_string(x = "TIMESTAMP", y = para))
+    if (isTRUE(ephemeral.time) == FALSE) {
+       #do nothing
+    } else {
+    my.sunset <- ephemeral.object$sunset[1:length(ephemeral.times$sunrise) - 1]
+    my.sunrise <- ephemeral.object$sunrise[2:length(ephemeral.times$sunrise)]
     
-    if (isTRUE(ephemeral.time)) {
     p <- p + ggplot2::annotate("rect", 
-          xmin = ephemeral.times$sunset[1:length(ephemeral.times$sunrise) - 1], 
-          xmax = ephemeral.times$sunrise[2:length(ephemeral.times$sunrise)], 
+         # xmin = ephemeral.times$sunset[1:length(ephemeral.times$sunrise) - 1],
+         xmin = my.sunset,
+         xmax = my.sunrise,
+         # xmax = ephemeral.times$sunrise[2:length(ephemeral.times$sunrise)], 
           ymin = my.min, ymax = my.max,
           fill = "grey", alpha = 0.1)
      }

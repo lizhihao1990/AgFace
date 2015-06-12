@@ -10,12 +10,12 @@ GlasshouseFolderImport(folder = ".")
 \item{foldername}{of the DAT files. Defaults to current folder.}
 }
 \value{
-One data frame containing the data from all DAT files in the foldername
+One data frame containing the data from all DAT files in the \code{foldername}
 }
 \description{
 Author: Markus Löw
 Date: May 2015
-Imports and processes all Glasshouse DAT files from a folder.
+Imports and processes all Glasshouse DAT files from a folder. Uses \code{\link{GlasshouseFileImport}}.
 }
 \examples{
 GlasshouseFolderImport()

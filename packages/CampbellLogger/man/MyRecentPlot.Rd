@@ -2,14 +2,14 @@
 % Please edit documentation in R/MyRecentPlot.R
 \name{MyRecentPlot}
 \alias{MyRecentPlot}
-\title{Visualise recent data measured by an AgFace Campbell Scientific logger over a selected Time Period}
+\title{Visualise recent data measured by an AgFace Campbell Scientific logger over the last hours.}
 \usage{
 MyRecentPlot(para, hours, data, logger = NA, yscale_min = NA,
   yscale_max = NA, cartesian = TRUE, sensor.colour = FALSE,
-  ephemeral.time = TRUE)
+  ephemeral.time = TRUE, ephemeral.object = ephemeral.times)
 }
 \arguments{
-\item{para}{Name of the parameter to be visualised. See \code{sensor.names} for a list of parameters. Works with non-missing data only.}
+\item{para}{Name of the parameter to be visualised. See \code{\link{GetSensorID}} for a list of \code{sensor.names}. Works with non-missing data only.}
 
 \item{hours}{Number of recent hours over which to visualise data. Starts from last timestamp in the data frame.}
 
@@ -17,15 +17,20 @@ MyRecentPlot(para, hours, data, logger = NA, yscale_min = NA,
 
 \item{logger}{Only visualise data from the specified logger system. Defaults to NA to use data from all logger systems.}
 
-\item{yscale_min}{Numeric. Lower limit of the y-axis. Defaults to NA to visualise the full range of values.}
+\item{yscale_min}{Numeric. Lower limit of the y-axis. Defaults to NA to visualise the full range of values. When used, \code{yscale_max} has to be specified as well.}
 
-\item{yscale_max}{Numeric. Upper limit of the y-axis. Defaults to NA to visualise the full range of values.}
+\item{yscale_max}{Numeric. Upper limit of the y-axis. Defaults to NA to visualise the full range of values. \code{yscale_min} can not be NA.}
 
 \item{cartesian}{Logical. Discard data outside of the specified y-axis range. Defaults to TRUE.}
 
 \item{sensor.colour}{Logical. Identify each SensorID per logger system with a unique colour. Defaults to TRUE.}
 
-\item{ephemeral.time}{Logical. If true, an object named \code{ephemeral.times}. Default is \code{TRUE}. The object ephemeral.times contains sunrise and sunset information as provided by the function \code{CampbellSunriseSunset}.}
+\item{ephemeral.time}{Logical. If FALSE, shading for night time will not be added to the plot. Defaults to TRUE}
+
+\item{ephemeral.object}{Name of the object with sunrise and seunset informationation. If an object name is provided, it has to have the same structure as the output of \code{link{CampbellSunriseSunset}}, i.e. provide a Date, sunrise, and sunset column for each date in the \code{data} range. Defaults to \code{ephemeral.times}. Only evaluated when \code{ephemeral.time} is TRUE.}
+}
+\value{
+Returns a ggplot object.
 }
 \description{
 Visualise a selected parameter from a Campbell logger file for a given time window starting from the latest timestamp in the data frame. All sensors that measure this parameter on each logger system will be shown. Sensors are identified by their SensorID and logger system ID.

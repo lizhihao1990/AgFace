@@ -1,9 +1,10 @@
-# function to re-organise Campbell data
-# returns data frame with values of all sensors of a given type in the same column
-# identifies each value using SensorID crated from the Sensor number, SYSTEM name and TIMESTAMP
+#' Function to re-organise Campbell data
+#'
+#' @description Merges sensor data from multiple sensors of the same type into one column. Identifies each value using SensorID created from the Sensor number, SYSTEM name and TIMESTAMP.
+#' @return data frame with values of all sensors of a given type in the same column
 
 CampbellCast <- function(data) {
-	require(plyr) # will be loaded when package is loaded
+	#require(plyr) # will be loaded when package is loaded
 	# require(reshape2) # will be loaded when package is loaded
 	
 	# melt data into long format based on SYSTEM and TIMESTAMP
@@ -13,8 +14,8 @@ CampbellCast <- function(data) {
 	df.melt <- df.melt[df.melt$variable != "RECORD", ]
 
         # using plyr to process SensorIDs
-	my.names <- ddply(df.melt,
-		        .(SYSTEM, variable),
+	my.names <- plyr::ddply(df.melt,
+		        plyr::.(SYSTEM, variable),
 		       function(x) GetSensorID(x$variable))
 	my.names$SensorID <- as.factor(as.character(my.names$SensorID))
 	

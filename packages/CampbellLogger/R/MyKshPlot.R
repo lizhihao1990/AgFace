@@ -5,6 +5,7 @@
 #' @param date Character string in POSIXct format (YYYY-mm-dd). Defaults to the current date.
 #' @param para The parameter to visualise. Defaults to "Kshapp_Avg".
 #' @param ylim y-axis range as vector. Defautls to \code{c(0, 1)}
+#' @return Returns a ggplot object.
 
 MyKshPlot <- function(data, date = Sys.time(), para = "Kshapp_Avg", ylim = c(0, 1)) {
      #require(ggplot2) # will be loaded when the whle package is loaded

@@ -14,6 +14,9 @@ CampbellFileImport(file, time.zone = "Australia/Melbourne",
 
 \item{checkduplicates}{Check for and remove duplicates from the file. Logical, defaults to TRUE.}
 }
+\value{
+data frame with imported *.dat file
+}
 \description{
 import a Campbell logger *.dat file
 }

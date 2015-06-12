@@ -134,13 +134,13 @@ my.data.all <- rbind(my.data.noV4, my.V4)
 # +++++++++++++++++++++++++
 
 # putting the data in wide format
-require(reshape2)
+# require(reshape2) # will be loaded on when package is loaded
 
 # drop V1 from the data, now redundant
 V1column.no <- which(names(my.data.all) == "V1")
 my.data.all.noV1 <- my.data.all[, -V1column.no]
 
-my.data.all.cast <- dcast(my.data.all.noV1,
+my.data.all.cast <- reshape2::dcast(my.data.all.noV1,
                     value.var = "V3",
                     TIME ~ SensorName)
 return(my.data.all.cast)

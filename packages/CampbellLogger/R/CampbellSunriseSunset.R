@@ -1,11 +1,14 @@
 #' Calculate sunrise and sunset times based on location and date for Campell *.dat files
 #'
-#' @param data Data frame with a TIMESTAMP entry
-#' @param location Location of the measurement for which to calculate sunrise and sunset. Given in matrix format containing x and y coordinates. Defaults to \code{Agface.loc.}
+#' @description Calculates sunrise and sunset for each unique day from the \code{TIMESTAMP} information of the logger file. Uses function \code{sunriseset} from package \pkg{maptools}
+#' @param data Data frame with a \code{TIMESTAMP} entry
+#' @param location Location of the measurement for which to calculate sunrise and sunset. Given in matrix format containing x and y coordinates. Defaults to \code{Agface.loc}.
 #' @param DayLigthSaving Logical. If \code{TRUE} one hour is subtracted from the calculated sunrise and sunset times.
+#' @return Returns a data frame with Date and sunrise/sunset information for each \code{TIMESTAMP}.
+#' @seealso \code{\link{maptools}}
 
 CampbellSunriseSunset <- function(data, location = Agface.loc, DayLightSaving = FALSE) {
-require(maptools) # provides functions "sun-methods" # will be loaded when package is loaded
+#require(maptools) # provides functions "sun-methods" # will be loaded when package is loaded
 # Agface field site position
 # -36.751367, 142.114477
 
@@ -31,7 +34,7 @@ CalcSunriseSunset <- function(date, spatial.loc = location) {
    # requires maptools
    # require(maptools)
    spatial.loc <- sp::SpatialPoints(spatial.loc,
-                                proj4string=CRS("+proj=longlat +datum=WGS84"))
+                                proj4string=sp::CRS("+proj=longlat +datum=WGS84"))
    my.sunrise <- maptools::sunriset(spatial.loc, 
                           date, 
                           direction = "sunrise", 
@@ -60,7 +63,7 @@ my.calendar.days <- as.POSIXct(unique(my.calendar.days))
 my.calendar.days <- data.frame(Date = my.calendar.days)
 
 ephemeral.times <- plyr::ddply(my.calendar.days,
-                        .(Date),
+                        plyr::.(Date),
                         .progress = "text",
                         function(x) CalcSunriseSunset(x$Date, 
                                      spatial.loc = location))

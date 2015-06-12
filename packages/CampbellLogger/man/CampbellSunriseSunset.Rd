@@ -7,13 +7,19 @@
 CampbellSunriseSunset(data, location = Agface.loc, DayLightSaving = FALSE)
 }
 \arguments{
-\item{data}{Data frame with a TIMESTAMP entry}
+\item{data}{Data frame with a \code{TIMESTAMP} entry}
 
-\item{location}{Location of the measurement for which to calculate sunrise and sunset. Given in matrix format containing x and y coordinates. Defaults to \code{Agface.loc.}}
+\item{location}{Location of the measurement for which to calculate sunrise and sunset. Given in matrix format containing x and y coordinates. Defaults to \code{Agface.loc}.}
 
 \item{DayLigthSaving}{Logical. If \code{TRUE} one hour is subtracted from the calculated sunrise and sunset times.}
 }
+\value{
+Returns a data frame with Date and sunrise/sunset information for each \code{TIMESTAMP}.
+}
 \description{
-Calculate sunrise and sunset times based on location and date for Campell *.dat files
+Calculates sunrise and sunset for each unique day from the \code{TIMESTAMP} information of the logger file. Uses function \code{sunriseset} from package \pkg{maptools}
+}
+\seealso{
+\code{\link{maptools}}
 }
 

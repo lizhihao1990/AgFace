@@ -2,13 +2,13 @@
 #'
 #' Author: Markus Löw
 #' Date: May 2015
-#' Imports and processes all Glasshouse DAT files from a folder.
+
+#' Imports and processes all Glasshouse DAT files from a folder. Uses \code{\link{GlasshouseFileImport}}.
 #' @param foldername of the DAT files. Defaults to current folder.
-#' @return One data frame containing the data from all DAT files in the foldername
+#' @return One data frame containing the data from all DAT files in the \code{foldername}
 #' @examples 
 #' GlasshouseFolderImport()
 #' GlasshouseFolderImport("C:/Mydata/Climate")
-
 
 # function to import all DAT files from a folder
 GlasshouseFolderImport <- function(folder = ".") {

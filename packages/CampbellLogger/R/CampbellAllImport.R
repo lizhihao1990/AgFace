@@ -1,15 +1,17 @@
 #' Import several Campbell Science AgFace data logger *.dat files from a Folder
 #'
 #' @description
-#' Uses \code{CampbellFileImport} to import all *.dat files from a folder. Files are selected based on their log-interval that is part of their file name. Allowed intervals are "5Min", "15Min", "Hourly", "Daily".
+#' Uses \code{\link{CampbellFileImport}} to import all *.dat files from a folder. Files are selected based on their log-interval that is part of their file name. Allowed intervals are "5Min", "15Min", "Hourly", "Daily".
 #'
 #' @param logger.folder Full path to the location of the *.dat files. Defaults to "~/AgFace/2015/Campbell_logger/logger_data"
 #' @param log.interval Select the files based on the common log interval that is specified in the filename. Allowed values are \code{"5Min", "15Min", "Hourly", "Daily"}. Only one time interval is allowed.
 #' @param logger.name Select files from one logger only. \code{logger.name} has to match the System name as given in the file name. Allowed values are \code{"SYS1", "SYS2", ..., "SYS8"}
+#' @return Returns data frame with all imported *.dat files.
 
 CampbellAllImport <- function(logger.folder   = "~/AgFace/2015/Campbell_logger/logger_data",
                               log.interval    = "5Min",
-                              logger.name     = NA) {
+                              logger.name     = NA,
+                              checkduplicates = TRUE) {
  ## function import all files from logger.folder that match the requestes log.interval
  ## returns data frame of all files
  
@@ -37,9 +39,15 @@ CampbellAllImport <- function(logger.folder   = "~/AgFace/2015/Campbell_logger/l
      found.files <- grep(log.interval, list.files(), value = TRUE)
     
      # import all files. Returns a named list of data frames 
-     my.list <- lapply(found.files, CampbellFileImport) 
-     names(my.list) <- found.files
      
+     
+     if (isTRUE(checkduplicates) == FALSE) {
+     	my.list <- lapply(found.files, function (x) 
+     	                  CampbellFileImport(x, checkduplicates = FALSE)) 
+     } else {
+	my.list <- lapply(found.files, CampbellFileImport) 
+     }
+     names(my.list) <- found.files
      # process each data frame, to have a column with System Name
      # get first four characters of last column to determine System Name
      # then, remove the System Name from the parameter/column names

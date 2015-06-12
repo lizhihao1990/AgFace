@@ -6,7 +6,7 @@
 \usage{
 
   CampbellAllImport(logger.folder = "~/AgFace/2015/Campbell_logger/logger_data",
-  log.interval = "5Min", logger.name = NA)
+  log.interval = "5Min", logger.name = NA, checkduplicates = TRUE)
 }
 \arguments{
 \item{logger.folder}{Full path to the location of the *.dat files. Defaults to "~/AgFace/2015/Campbell_logger/logger_data"}
@@ -15,7 +15,10 @@
 
 \item{logger.name}{Select files from one logger only. \code{logger.name} has to match the System name as given in the file name. Allowed values are \code{"SYS1", "SYS2", ..., "SYS8"}}
 }
+\value{
+Returns data frame with all imported *.dat files.
+}
 \description{
-Uses \code{CampbellFileImport} to import all *.dat files from a folder. Files are selected based on their log-interval that is part of their file name. Allowed intervals are "5Min", "15Min", "Hourly", "Daily".
+Uses \code{\link{CampbellFileImport}} to import all *.dat files from a folder. Files are selected based on their log-interval that is part of their file name. Allowed intervals are "5Min", "15Min", "Hourly", "Daily".
 }
 
