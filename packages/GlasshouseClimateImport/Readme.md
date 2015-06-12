@@ -12,7 +12,7 @@ for details on the functions provided by this package.
 ### Installation
 To enable installations of packages straight from github use:
 ```{r}
-install.packages("devtools")
+install.packages("devtools", dep = TRUE)
 ```
 
 Then
