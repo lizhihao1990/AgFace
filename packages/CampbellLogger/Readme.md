@@ -35,7 +35,8 @@ ephemeral.times <- CampbellSunriseSunset(df)
 
 # specify the number of recent hours to use in the figure
 
-# create figure for the last 48 hours, for the soil moisture sensors, all systems, identify each sensor per system by colour, include information on day- / night-time.
+# create figure for the last 48 hours, for the soil moisture sensors, implement a y-axis range from 0 to 0.35, identify each sensor per system by colour, discard data outside of the chosen y-axis scale, and include information on day- / night-time.
+
 MyRecentPlot(para = "Soil_Avg", 
              hours = 48, 
              data = df.cast,
