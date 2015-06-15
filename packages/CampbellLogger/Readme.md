@@ -17,6 +17,8 @@ Installation straight from github via
 install_github("MarkusLoew/AgFace/packages/CampbellLogger")
 ```
 
+Installation under Windows might require the installation of Rtools. There will be a prompt for it if needed.
+
 ### Example usage
 
 ```{r}

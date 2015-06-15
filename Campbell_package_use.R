@@ -10,10 +10,10 @@ df.cast <- CampbellCast(df)
 
 ephemeral.times <- CampbellSunriseSunset(df)
 
-my.time.to.plot <- 48
+my.time.to.plot <- 144
 MyRecentPlot("Soil_Avg", my.time.to.plot, df.cast,
-             yscale_min = 0.1, yscale_max = 0.35,
+             yscale_min = 0, yscale_max = 0.4,
              sensor.colour = TRUE, cartesian = TRUE)
 MyRecentPlot("Batt_volt_Min", my.time.to.plot, df.cast,
              yscale_min = NA, yscale_max = NA,
-             sensor.colour = TRUE, cartesian = TRUE)
+             sensor.colour = FALSE, cartesian = TRUE)

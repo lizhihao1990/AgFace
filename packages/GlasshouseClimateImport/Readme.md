@@ -20,6 +20,8 @@ Then
 install_github("MarkusLoew/AgFace/packages/GlasshouseClimateImport")
 ```
 
+Installation under Windows might require the installation of Rtools. There will be a prompt for it if needed.
+
 ### Example session
 
 ```{r}
