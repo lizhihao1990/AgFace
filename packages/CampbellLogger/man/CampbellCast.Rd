@@ -2,7 +2,7 @@
 % Please edit documentation in R/CampbellCast.R
 \name{CampbellCast}
 \alias{CampbellCast}
-\title{Function to re-organise Campbell data}
+\title{Function to re-organise Campbell data into a format suitable for creating figures per sensor type}
 \usage{
 CampbellCast(data)
 }
