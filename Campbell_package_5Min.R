@@ -4,16 +4,16 @@ library(CampbellLogger)
 
 setwd("~/AgFace/2015/Campbell_logger/Transmissions")
 
-df <- CampbellAllImport(log.interval = "Hourly")
+df <- CampbellAllImport(log.interval = "5Min")
 
 df.cast <- CampbellCast(df)
 
 ephemeral.times <- CampbellSunriseSunset(df)
 
-my.time.to.plot <- 172
-MyRecentPlot("Soil_Avg", my.time.to.plot, df.cast,
-             yscale_min = 0, yscale_max = 0.5,
-             sensor.colour = TRUE, cartesian = TRUE)
-MyRecentPlot("Batt_volt_Min", my.time.to.plot, df.cast,
+my.time.to.plot <- 166
+MyRecentPlot("IR_Horz_Avg", my.time.to.plot, df.cast,
              yscale_min = NA, yscale_max = NA,
-             sensor.colour = FALSE, cartesian = TRUE)
+             sensor.colour = TRUE, cartesian = TRUE)
+MyRecentPlot("IR_Narrow_Avg", my.time.to.plot, df.cast,
+             yscale_min = NA, yscale_max = NA,
+             sensor.colour = TRUE, cartesian = TRUE)

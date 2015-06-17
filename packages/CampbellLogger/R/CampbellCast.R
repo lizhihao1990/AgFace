@@ -7,6 +7,17 @@ CampbellCast <- function(data) {
 	#require(plyr) # will be loaded when package is loaded
 	# require(reshape2) # will be loaded when package is loaded
 	
+	# determine the logical or character parameters
+	my.characters <- sapply(data[, 1:ncol(data)], is.character)
+	col.num <- which(my.characters == FALSE)
+	to.remove <- names(my.characters)[which(my.characters == TRUE)]
+	if (length(to.remove > 0)) {
+	msg.text <- "Removing the following parameters, as they are of class character:"
+	msg.text <- paste(msg.text, to.remove, sep = " ")
+        message(msg.text)
+	data <- data[, col.num]
+	}
+		
 	# melt data into long format based on SYSTEM and TIMESTAMP
 	df.melt <- reshape2::melt(data, id.vars = c("SYSTEM", "TIMESTAMP"))
 
