@@ -1,0 +1,8 @@
+#!/bin/sh
+
+export R_HOME="/usr/lib/R"
+export R_ARCH=""
+export R_LIBS="/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library"
+export R_LIBS_USER="~/R/x86_64-pc-linux-gnu-library/3.2"
+export JAVA_LD_PATH="/usr/lib/R/lib:/usr/lib/x86_64-linux-gnu:/usr/lib/jvm/java-7-oracle/jre/lib/amd64/server:@JAVA_LD@"
+'/usr/lib/jvm/java-7-oracle/jre/bin/java' -cp '/usr/local/lib/R/site-library/rJava/java/boot' -Drjava.class.path='/usr/local/lib/R/site-library/rJava/jri/JRI.jar:/usr/local/lib/R/site-library/iplots/java/iplots.jar:/usr/local/lib/R/site-library/JGR/java/JGR.jar:/usr/lib/R/etc/classes:/usr/lib/R/etc/classes/classes.jar' -Drjava.path='/usr/local/lib/R/site-library/rJava' -XX:+UseConcMarkSweepGC -Xms2g -Xmx6g -Dmain.class=org.rosuda.JGR.JGR  -Djgr.load.pkgs=yes  -Dr.arch=  RJavaClassLoader

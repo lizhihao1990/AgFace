@@ -20,7 +20,8 @@ CampbellFileImport <- function(file, time.zone = "Australia/Melbourne", checkdup
   names(df) <- my.header
   names(df) <- gsub("\\.", "_", names(df))
   df$TIMESTAMP <- as.POSIXct(df$TIMESTAMP, tz = time.zone)
-  
+  # get rid of rows without TIMESTAMP - not sure why these exist
+  df <- df[!is.na(df$TIMESTAMP), ]
   # get rid of duplicate samples
   # df.orig <- df
   df$RECORD <- 0
@@ -149,6 +150,57 @@ GetSensorID <- function(sensor.name) {
                       SensorName = sensor.name.no.id)
    return(out)
    }
+   
+   # Temperature
+   if (grepl("Temp_", sensor.name) == TRUE) {
+      my.split.1 <- "Temp_"
+      my.split.2 <- "_"
+       
+      # split the sensor.name using the gathered my.split.x information
+      splitted <- strsplit(sensor.name, split = my.split.1)
+      #first.bit  <- unlist(lapply(splitted, "[", 1))
+      first.bit <- my.split.1
+      second.bit <- unlist(lapply(splitted, "[", 2))
+      # split the second bit again to get to the sensor id
+      sensor.id <- unlist(strsplit(second.bit, split = "_"))
+      sensor.id <- unlist(lapply(strsplit(second.bit, split = my.split.2), "[", 2))
+      sensor.desc <- unlist(lapply(strsplit(second.bit, split = my.split.2), "[", 1))
+      # assemble sensor name
+      sensor.name.no.id <- paste(first.bit, sensor.desc, sep = "_")
+      sensor.name.no.id <- gsub("__", "_", sensor.name.no.id)
+   
+      # create output data frame
+      out <- data.frame(FullName = sensor.name,
+                      SensorID = sensor.id,
+                      SensorName = sensor.name.no.id)
+   return(out)
+   }
+   
+   # Humidity
+   if (grepl("Hum_", sensor.name) == TRUE) {
+      my.split.1 <- "Hum_"
+      my.split.2 <- "_"
+       
+      # split the sensor.name using the gathered my.split.x information
+      splitted <- strsplit(sensor.name, split = my.split.1)
+      #first.bit  <- unlist(lapply(splitted, "[", 1))
+      first.bit <- my.split.1
+      second.bit <- unlist(lapply(splitted, "[", 2))
+      # split the second bit again to get to the sensor id
+      sensor.id <- unlist(strsplit(second.bit, split = "_"))
+      sensor.id <- unlist(lapply(strsplit(second.bit, split = my.split.2), "[", 2))
+      sensor.desc <- unlist(lapply(strsplit(second.bit, split = my.split.2), "[", 1))
+      # assemble sensor name
+      sensor.name.no.id <- paste(first.bit, sensor.desc, sep = "_")
+      sensor.name.no.id <- gsub("__", "_", sensor.name.no.id)
+   
+      # create output data frame
+      out <- data.frame(FullName = sensor.name,
+                      SensorID = sensor.id,
+                      SensorName = sensor.name.no.id)
+   return(out)
+   }
+   
    if (grepl("RECORD", sensor.name) == TRUE) {
    out <- data.frame(FullName = "RECORD",
                      SensorID = "1",

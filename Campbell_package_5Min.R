@@ -10,10 +10,11 @@ df.cast <- CampbellCast(df)
 
 ephemeral.times <- CampbellSunriseSunset(df)
 
-my.time.to.plot <- 148
+my.time.to.plot <- 600
 MyRecentPlot("IR_Horz_Avg", my.time.to.plot, df.cast,
-             yscale_min = NA, yscale_max = NA,
+             yscale_min = -4, yscale_max = 35,
              sensor.colour = TRUE, cartesian = TRUE)
 MyRecentPlot("IR_Narrow_Avg", my.time.to.plot, df.cast,
-             yscale_min = NA, yscale_max = NA,
-             sensor.colour = TRUE, cartesian = TRUE)
+             yscale_min = -4, yscale_max = 35,
+             sensor.colour = TRUE, cartesian =TRUE)
+

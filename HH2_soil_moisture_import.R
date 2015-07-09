@@ -1,9 +1,9 @@
-#############################################################
-# Import function for Delta-T Devices HH2 Soil moisture file
-#
-# Markus Löw, June 2014
-# Version 0.1
-#############################################################
+#' Import function for Delta-T Devices HH2 Soil moisture files
+#'
+#' @description Imports a file created by the DeltaT handheld soil mositure reader (HH2). Works for profile probes (PR2) or TDRs (ML3) files. Sensor type must be specified at import. Re-organises the data of the HH2 file to be compatible with a data frame.
+#' @param filename The name of the file to be imported. Character string.
+#' @param sensor.type Either "PR2" for soil mositure profile probe or "ML3" for TDR. Other values are not allowed.
+#' @return Returns a data frame with the elements Time, Sample, Plot, Device, Depth, Percent_Vol, Vol_Error, mV, mV_Error.
 
 HH2Import <- function(filename, sensor.type) {
    # filename: character string, path and filename of the HH2 file

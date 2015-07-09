@@ -23,6 +23,9 @@ CampbellFileImport <- function(file,
   names(df) <- gsub("\\.", "_", names(df))
   df$TIMESTAMP <- as.POSIXct(df$TIMESTAMP, tz = time.zone)
   
+  # get rid of rows without TIMESTAMP - not sure why these exist
+  df <- df[!is.na(df$TIMESTAMP), ]
+  
   # get rid of duplicate samples
   df$RECORD <- 0
   if (isTRUE(checkduplicates) == TRUE) {

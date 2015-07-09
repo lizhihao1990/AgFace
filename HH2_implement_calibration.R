@@ -175,6 +175,7 @@ p <- ggplot(mydata[mydata$Crop == "Wheat" &
                 x = "Date",
                 y = expression("Soil moisture based on soil- and depth-specific calibration ["~m^3*m^-3*"]"))
 p
+fig.swc.wheat.300 <- p
 ggsave(file = "Depth_300_rainfed_only.pdf",
        width = 9, height = 6)
 ggsave(file = "Depth_300_rainfed_only.png",
@@ -205,6 +206,32 @@ p <- ggplot(mydata[mydata$Crop == "Wheat" &
                 y = expression("Soil moisture based on soil- and depth-specific calibration ["~m^3*m^-3*"]"))
 p
 fig.swc.wheat.timecourse.no_smooth.free_y <- p
+
+p <- ggplot(mydata[mydata$Crop == "Wheat" &
+                   !is.na(mydata$Crop), ], 
+            aes(x = Day, y = volSWC.recal))
+  p <- p + stat_summary(aes(colour = CO2, linetype = Tube_treatment), 
+                        fun.data = "mean_sdl", mult = 1, geom = "line", 
+                        alpha = 0.5)
+  p <- p + geom_vline(xintercept = as.numeric(Key.dates), colour = "grey")
+  p <- p + stat_summary(aes(colour = CO2, linetype = Tube_treatment), 
+                        fun.data = "mean_sdl", mult = 1, geom = "linerange", 
+                        alpha = 0.5)
+  p <- p + stat_summary(aes(colour = CO2, linetype = Tube_treatment), 
+                        fun.data = "mean_sdl", mult = 1, geom = "point", 
+                        alpha = 0.5)
+  #p <- p + geom_smooth(aes(colour = CO2, linetype = Tube_treatment), se = FALSE)
+
+  p <- p + facet_grid(Depth ~ Cultivar)
+  p <- p + theme_bw()
+  p <- p + theme(panel.grid.major = element_blank(),
+                 panel.grid.minor = element_blank())
+  p <- p + labs(linetype = "Water supply",
+                x = "Date",
+                y = expression("Soil moisture based on soil- and depth-specific calibration ["~m^3*m^-3*"]"))
+p
+fig.swc.wheat.timecourse.no_smooth.full_y <- p
+
 
 p <- ggplot(mydata[mydata$Crop == "Lentil" &
                    !is.na(mydata$Crop), ], 
@@ -479,8 +506,8 @@ lme.wheat <- lme(volSWC.recal ~ CO2 * Cultivar * Depth * Tube_treatment * Weekna
                data = mydata[mydata$Crop == "Wheat", ],
                na.action = na.omit)
 anova(lme.wheat)
-lme.lentil <- lme(volSWC.recal ~ CO2 * Cultivar,
-               random = ~ 1 | Weekname / Ring,
+lme.lentil <- lme(volSWC.recal ~ CO2 * Cultivar * Depth * Weekname,
+               random = ~ 1 | Ring / Weekname,
                data = mydata[mydata$Crop == "Lentil", ],
                na.action = na.omit)
 anova(lme.lentil)
@@ -502,8 +529,24 @@ dlply(mydata,
 # figures for science meeting
 pdf(file = "Soil_moisture_figures_Science_meeting.pdf",
     width = 11, height = 8)
+print(fig.swc.wheat.timecourse.no_smooth.full_y)
 print(fig.swc.wheat.timecourse.no_smooth.free_y)
+print(fig.swc.wheat.300)
 print(fig.lentil.timecourse.free_y)
 print(fig.average.profile.per.season.wheat)
 print(fig.average.profile.per.season.lentil)
+print(persp3D(z = my.list["Wheat.Scout.aCO2.wet"][[1]],
+        contour = TRUE, image = TRUE, shade = 0.1,
+        box = TRUE, axes = TRUE,
+        colvar = Scout.aCO2.wet.minus.Yitpi.aCO2.wet,
+        col = my.dif,
+        theta = 66, #clab = "mV",
+        phi = 15, expand = 0.8,
+        facets = TRUE, colkey = TRUE,
+        xlab = "Depth [mm]",
+        ylab = "Week",
+        zlab = "Soil moisture [m3 m-3]",
+        zlim = c(0, 1), #ticktype="detailed",
+        main = "Scout aCO2 wet",
+        clab = "Scout - Yitpi [m3 m-3]"))
 dev.off()

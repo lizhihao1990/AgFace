@@ -6,7 +6,7 @@ library(ggplot2)
 library(plyr)
 library(grid)
 #library(gridExtra)
-library(RAtmosphere)
+# library(RAtmosphere)
 library(reshape2)
 
 source("~/AgFace/R_scripts/import_Campbell.R")
@@ -20,6 +20,8 @@ my.start.date <- as.POSIXct("2015-04-01", tz = "Australia/Melbourne")
 
 df <- df[df$TIMESTAMP >= my.start.date, ]
 
+write.csv(df, file = "df.csv", row.names = F)
+
 df.melt <- melt(df, id.vars = c("SYSTEM", "TIMESTAMP"))
 #my.out <- lapply(df.melt$variable, GetSensorID)
 
@@ -32,11 +34,18 @@ my.names <- ddply(df.melt,
 my.names$SensorID <- as.factor(as.character(my.names$SensorID))
 #my.names <- do.call(rbind, my.out)
 
-df.melt.merge <- merge(df.melt, my.names,
-                       by.x = c("SYSTEM", "variable"),
-                       by.y = c("SYSTEM", "variable"))
-df.melt.merge <- unique(df.melt.merge)
-df.melt <- df.melt.merge
+#df.melt.merge <- merge(df.melt, my.names,
+#                       by.x = c("SYSTEM", "variable"),
+#                       by.y = c("SYSTEM", "variable"))
+df.melt.join <- join(df.melt, my.names,
+                     by = c("SYSTEM", "variable"),
+                     match = "first")
+                     
+#df.melt.merge <- unique(df.melt.merge)
+df.melt <- unique(df.melt.join[df.melt.join$SYSTEM == "SYS7", ])
+#dim(df.melt)
+#dim(unique(df.melt))
+# df.melt <- df.melt.merge
 
 df.melt$variable <- NULL
 df.melt$FullName <- NULL
@@ -44,6 +53,8 @@ df.melt$FullName <- NULL
 
 df.2 <- dcast(df.melt,
               SYSTEM + TIMESTAMP + SensorID ~ SensorName)
+write.csv(df.2, file = "df2.csv", row.names = F)
+write.csv(df.melt, file = "melt.csv", row.names = F)
 
 # Agface field site position
 # -36.751367, 142.114477

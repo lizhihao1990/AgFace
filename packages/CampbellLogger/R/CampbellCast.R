@@ -33,16 +33,27 @@ CampbellCast <- function(data) {
 	my.names$SensorID <- as.factor(as.character(my.names$SensorID))
 	
 	# merge the sensor names and the melted data
-	df.melt.merge <- merge(df.melt, my.names,
-		               by.x = c("SYSTEM", "variable"),
-		               by.y = c("SYSTEM", "variable"))
-
+	# message("Merging")
+	
+       # df.melt.merge <- merge(df.melt, my.names,
+       #	                by.x = c("SYSTEM", "variable"),
+       #	                by.y = c("SYSTEM", "variable"))
+        
+        # using join from plyr package instead
+        # fast than using "merge"
+        message("Joining data")
+        #print(system.time(
+        df.melt.merge <- plyr::join(df.melt, my.names,
+                              by = c("SYSTEM", "variable"),
+                              match = "first")
+        #))
+        # message("Get rid of duplicates")
 	df.melt.merge <- unique(df.melt.merge)
 	df.melt <- df.melt.merge
 
 	df.melt$variable <- NULL
 	df.melt$FullName <- NULL
-
+        #print(names(df.melt))
 	# cast the merged data into wide format
 	data.out <- reshape2::dcast(df.melt,
 		      SYSTEM + TIMESTAMP + SensorID ~ SensorName)

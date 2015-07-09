@@ -1,6 +1,6 @@
 # Irrigation characterisation for Tillering analysis 2011/2012
 
-library(reshape)
+library(reshape2)
 library(plyr)
 library(ggplot2)
 
@@ -151,3 +151,4 @@ stage_water$variable <- as.factor(stage_water$variable)
 
 # export the water amount per stage
 save(stage_water, file = "Water_received_per_Stage_2011_2012.RData", compress = TRUE)
+#write.csv(stage_water, file = "Water_received_SB_tin_per_Stage_2011_2012.csv", row.names = FALSE)
