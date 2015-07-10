@@ -10,11 +10,11 @@ registerDoMC(4)
 
 setwd("~/AgFace/2015/Campbell_logger/Transmissions")
 #system.time(
-#df.a <- CampbellAllImport(log.interval = "5Min", use.parallel = FALSE)
+#df.a <- CampbellAllImport(log.interval = "15Min", use.parallel = FALSE)
 #)
 
 system.time(
-df <- CampbellAllImport(log.interval = "5Min", use.parallel = TRUE)
+df <- CampbellAllImport(log.interval = "15Min", use.parallel = TRUE)
 )
 
 #system.time(
@@ -34,4 +34,3 @@ MyRecentPlot("IR_Horz_Avg", my.time.to.plot, df.cast,
 MyRecentPlot("IR_Narrow_Avg", my.time.to.plot, df.cast,
              yscale_min = -4, yscale_max = 35,
              sensor.colour = TRUE, cartesian =TRUE)
-

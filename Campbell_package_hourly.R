@@ -10,7 +10,7 @@ df.cast <- CampbellCast(df)
 
 ephemeral.times <- CampbellSunriseSunset(df)
 
-my.time.to.plot <- 700
+my.time.to.plot <- 96
 MyRecentPlot("Soil_Avg", my.time.to.plot, df.cast,
              yscale_min = 0, yscale_max = 0.5,
              sensor.colour = TRUE, cartesian = TRUE)
@@ -23,11 +23,13 @@ df.cast$Hour <- format(df.cast$TIMESTAMP, "%H")
 
 # SYS1 TDR4 knocked or moved on June 25, 9 am?
 # SYS4 TDR4 knocked on June 30, 11 am?
-my.logger1.time <- 144
-MyRecentPlot("Soil_Avg", my.logger1.time, df.cast, logger = "SYS1",
+my.logger1.time <- 72
+MyRecentPlot("Soil_Avg", my.logger1.time, df.cast, logger = "SYS3",
              yscale_min = NA, yscale_max = NA,
              sensor.colour = TRUE, cartesian = TRUE)
-
+MyRecentPlot("Batt_volt_Min", my.logger1.time, df.cast, logger = "SYS3",
+             yscale_min = NA, yscale_max = NA,
+             sensor.colour = FALSE, cartesian = TRUE)
 #library(ggplot2)
 #p <- ggplot(df[df$Batt_volt_Min < 12 & df$SYSTEM == "SYS3", ], aes(x = Batt_volt_Min, y = Soil_Avg_3_))
 #  p <- p + geom_point()

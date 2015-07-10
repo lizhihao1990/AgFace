@@ -1,9 +1,11 @@
 #' Function to re-organise Campbell data into a format suitable for creating figures per sensor type
 #'
 #' @description Merges sensor data from multiple sensors of the same type into one column. Identifies each value using SensorID created from the Sensor number, SYSTEM name and TIMESTAMP.
+#' @param data Data frame with AgFace Campbell logger data that was imported by either \code{\link{CampbellAllImport}}.
+#' @param use.parallel Logical. Option to enable parallel processing for the file import. Parallel-computing has to be configured before this option can be used. Defaults to FALSE. Unfortunately, it does not speed up the \code{joining} part of the data reorganisation.
 #' @return data frame with values of all sensors of a given type in the same column
 
-CampbellCast <- function(data) {
+CampbellCast <- function(data, use.parallel = FALSE) {
 	# require(plyr)     # will be loaded when package is loaded
 	# require(reshape2) # will be loaded when package is loaded
 	
@@ -27,8 +29,12 @@ CampbellCast <- function(data) {
 	df.melt <- df.melt[df.melt$variable != "RECORD", ]
 
         # using plyr to process SensorIDs
+        message("Create SensorIDs")
 	my.names <- plyr::ddply(df.melt,
 		        plyr::.(SYSTEM, variable),
+		        .parallel = use.parallel,
+		        .paropts = list(.export = c("x", "GetSensorID"),
+                                        .packages = c("CampbellLogger")),
 		       function(x) GetSensorID(x$variable))
 	my.names$SensorID <- as.factor(as.character(my.names$SensorID))
 	
@@ -41,7 +47,7 @@ CampbellCast <- function(data) {
         
         # using join from plyr package instead
         # fast than using "merge"
-        message("Joining data")
+        message("Joining data, be patient.")
         #print(system.time(
         df.melt.merge <- plyr::join(df.melt, my.names,
                               by = c("SYSTEM", "variable"),
