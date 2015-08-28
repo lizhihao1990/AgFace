@@ -11,16 +11,44 @@ source("~/AgFace/R_scripts/HH2_file_processing_2015.R")
 source("~/AgFace/R_scripts/HH2_visualisation_and_summary_2015.R")
 
 # set working directory
-setwd("~/AgFace/2015/PR2_Soil_moisture")
+setwd("~/AgFace/2015/SoilFace/PR2")
 
 #1) HH2_soil_moisture_import.R
-#my.data <- HH2Import("PR2_20150611.csv", sensor.type = "PR2")
+df <- HH2Import("2015-07-15_PR2_SoilFace.csv", 
+                sensor.type = "PR2")
+
+rings <- 1:8
+ringIDs <- lapply(rings, function(x) rep(x, 4))
+RingIDs <- unlist(ringIDs)
+df$Ring <- RingIDs
+df$Ring <- as.factor(df$Ring)
+
+library(ggplot2)
+p <- ggplot(df, aes(x = Ring, y = Percent_Vol))
+  p <- p + stat_summary(fun.data = "mean_sdl", mult = 1)
+  #p <- p + geom_boxplot(aes(colour = Ring))
+  p <- p + facet_grid(Depth ~ .)
+  p <- p + theme_bw()
+p
+
+my.aov <- aov(Percent_Vol ~ Ring, data = df)
+summary(my.aov)
+# re-order mydf
+mydf <- df[with(df, order(Sample, Depth)), ]
+
+
+p <- ggplot(mydf, aes(x = Percent_Vol, y = Depth))
+  p <- p + geom_path(aes(colour = Ring))
+  p <- p + scale_y_reverse()
+  p <- p + facet_grid(. ~ Ring)
+  p <- p + theme_bw()
+p
 
 #2) HH2_file_processing.R
 #sm <- HH2SoilMoistureProcess(my.data, is.first = TRUE)
 
 # next file
-my.data2 <- HH2Import("PR2-20150824.csv", sensor.type = "PR2")
+my.data2 <- HH2Import("PR2-20150713.csv", sensor.type = "PR2")
 
 sm <- HH2SoilMoistureProcess(my.data2, is.first = FALSE)
 

@@ -137,6 +137,36 @@ ggsave(file = "Fig.01.Tillering_se_poster.pdf",
        width = my.width * 1.25, height = my.height * 0.75, 
        units = "cm")
 
+# for Hobart abstract
+p <- ggplot(df[df$Stage != "DC31", ], 
+            aes(x = Cultivar, y = Tillers.m2..SS.dry.))
+  p <- p + stat_summary(aes(colour = CO2), 
+                        fun.data = "my.stderr", #mult = 1,
+                        position = position_dodge(width = 0.66), 
+                        geom = "linerange")
+  p <- p + stat_summary(aes(fill = CO2, colour = CO2, shape = CO2), 
+                        fun.data = "my.stderr", #mult = 1, 
+                        geom = "bar",
+                        position = position_dodge(width = 0.66))
+  p <- p + scale_colour_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("black", "black"))
+##  p <- p + scale_shape_manual(name = CO2.label, 
+##                        labels = CO2.treats,
+##                        values = c(21, 21))
+  p <- p + scale_fill_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("white", "black"))
+  p <- p + scale_linetype_manual(values = c("continuous", "dotted"))
+  p <- p + labs(y = expression("No. of Tillers"~(Tiller~m^-2)))
+  p <- p + facet_grid(Stage ~ Ord.Environment)
+  p <- p + theme_my
+  p <- p + theme(legend.position = c(0.44, 0.90))
+p
+
+ggsave(file = "Fig.01.Tillering_se_bar.png", 
+       width = 11, height = 7)
+
 # Tillering does only respond to Cultivar. Not affected by any other factor
 # percent reduction
 till.means <- CalcRes(df.melt, "Tillers.m2..SS.dry.", c("CO2", "Environment", "Stage", "Cultivar"))
@@ -198,6 +228,36 @@ ggsave(file = "Fig.02.Yield_se.pdf",
 ggsave(file = "Fig.02.Yield_se_poster.pdf", 
        width = my.width * 1.25, height = my.height * 0.75, 
        units = "cm")
+
+# for Hobart abstract
+p <- ggplot(df[df$Stage == "DC90", ], 
+            aes(x = Cultivar, y = Yield..g.m2.))
+  p <- p + stat_summary(aes(colour = CO2), 
+                        fun.data = "my.stderr", #mult = 1,
+                        position = position_dodge(width = 0.66), 
+                        geom = "linerange")
+  p <- p + stat_summary(aes(fill = CO2, colour = CO2, shape = CO2), 
+                        fun.data = "my.stderr", #mult = 1, 
+                        geom = "bar",
+                        position = position_dodge(width = 0.66))
+  p <- p + scale_colour_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("black", "black"))
+##  p <- p + scale_shape_manual(name = CO2.label, 
+##                        labels = CO2.treats,
+##                        values = c(21, 21))
+  p <- p + scale_fill_manual(name = CO2.label, 
+                        labels = CO2.treats,
+                        values = c("white", "black"))
+  p <- p + scale_linetype_manual(values = c("continuous", "dotted"))
+  p <- p + labs(y = expression(Yield~(g~m^-2)))
+  p <- p + facet_grid(Stage ~ Ord.Environment)
+  p <- p + theme_my
+  p <- p + theme(legend.position = c(0.38, 0.90))
+p
+
+ggsave(file = "Fig.02.Yield_se.png", 
+       width = 11, height = 7)
 
 lme.out$Silverstar.DC90.Yield..g.m2.
 

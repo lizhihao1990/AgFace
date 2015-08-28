@@ -10,7 +10,7 @@ df.cast <- CampbellCast(df)
 
 ephemeral.times <- CampbellSunriseSunset(df)
 
-my.time.to.plot <- 96
+my.time.to.plot <- 2000
 MyRecentPlot("Soil_Avg", my.time.to.plot, df.cast,
              yscale_min = 0, yscale_max = 0.5,
              sensor.colour = TRUE, cartesian = TRUE)
@@ -23,11 +23,11 @@ df.cast$Hour <- format(df.cast$TIMESTAMP, "%H")
 
 # SYS1 TDR4 knocked or moved on June 25, 9 am?
 # SYS4 TDR4 knocked on June 30, 11 am?
-my.logger1.time <- 72
-MyRecentPlot("Soil_Avg", my.logger1.time, df.cast, logger = "SYS3",
-             yscale_min = NA, yscale_max = NA,
+my.logger1.time <- 166
+MyRecentPlot("Soil_Avg", my.logger1.time, df.cast, #logger = "SYS1",
+             yscale_min = 0, yscale_max = 0.5,
              sensor.colour = TRUE, cartesian = TRUE)
-MyRecentPlot("Batt_volt_Min", my.logger1.time, df.cast, logger = "SYS3",
+MyRecentPlot("Batt_volt_Min", my.logger1.time, df.cast, #logger = "SYS3",
              yscale_min = NA, yscale_max = NA,
              sensor.colour = FALSE, cartesian = TRUE)
 #library(ggplot2)
@@ -66,20 +66,23 @@ my.sunrise <- my.sun$sunrise[2:length(my.sun$sunrise)]
 #            fill = "grey", alpha = 0.1)
 
 p <- ggplot(df.cast.clean, 
-             aes(x = TIMESTAMP, y = Soil_Avg*100))
+             aes(x = TIMESTAMP, y = Soil_Avg * 100))
  # p <- p + geom_point()
+  p <- p + geom_hline(yintercept = seq(20, 40, by = 5), colour = "light grey", alpha = 0.3)
+  p <- p + stat_summary(aes(fill = Ring), fun.data = "mean_cl_normal", mult = 1, geom = "ribbon", alpha = 0.1)
   p <- p + stat_summary(aes(colour = Ring), fun.data = "mean_sdl", mult = 1, geom = "line")
   p <- p + annotate("rect", xmin = my.sunset, 
             xmax = my.sunrise, ymin = 20, ymax = 45, 
             fill = "grey", alpha = 0.1)
-  p <- p + scale_colour_brewer(palette="Set2")
+  p <- p + scale_colour_brewer(palette = "Set2")
+  p <- p + scale_fill_brewer(palette = "Set2")
   p <- p + labs(y = "Mean soil moisture from TDRs, (%)")
   p <- p + theme_my
   p <- p + coord_cartesian(ylim = c(20, 45))
 p
 
-my.width = 27
-my.height = 21
+my.width = 32
+my.height = 18
 
 pdf(file = "TDR_figures.pdf",
     width = my.width/2.54, height = my.height/2.54)

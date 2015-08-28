@@ -11,7 +11,9 @@
 #' GlasshouseFolderImport("C:/Mydata/Climate")
 
 # function to import all DAT files from a folder
-GlasshouseFolderImport <- function(folder = ".") {
+GlasshouseFolderImport <- function(folder = ".", glasshouse) {
+ 
+ stopifnot(glasshouse %in% c("PC2", "teaching"))
  
  if (folder != ".") {
  # Get info on current folder
@@ -24,11 +26,14 @@ GlasshouseFolderImport <- function(folder = ".") {
  # get a list of file names
  my.files.list <- list.files(pattern = "\\.DAT$")
 
- my.list <- lapply(my.files.list, GlasshouseFileImport) 
+ my.list <- lapply(my.files.list, function(x){GlasshouseFileImport(data = x, glasshouse = glasshouse)}) 
  names(my.list) <- my.files.list
  
  # merge all data frames
  merged.data <- do.call("rbind", my.list)
+ 
+ # sort data based on date
+ merged.data <- merged.data[with(merged.data, order(TIME)), ]
  
  
  # go back to previous folder

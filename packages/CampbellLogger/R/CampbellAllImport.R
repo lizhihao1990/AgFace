@@ -41,16 +41,16 @@ CampbellAllImport <- function(logger.folder   = "~/AgFace/2015/Campbell_logger/l
      found.files <- grep(log.interval, list.files(), value = TRUE)
     
      # import all files. Returns a named list of data frames 
-     
-     
+          
      if (isTRUE(checkduplicates) == FALSE) {
      	my.list <- lapply(found.files, function (x) 
      	                  CampbellFileImport(x, checkduplicates = FALSE)) 
      } else {
         if (isTRUE(use.parallel) == FALSE) {
-	my.list <- lapply(found.files, CampbellFileImport) 
+	 	my.list <- lapply(found.files, CampbellFileImport) 
 	} else {
-	my.list <- parallel::mclapply(found.files, CampbellFileImport) 
+	    	stopifnot("parallel" %in% rownames(installed.packages()))
+	    	my.list <- parallel::mclapply(found.files, CampbellFileImport)
 	}
      }
      names(my.list) <- found.files

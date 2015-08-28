@@ -12,7 +12,7 @@
 GlasshouseFileImport <- function (data, glasshouse) {
 
 stopifnot(glasshouse %in% c("PC2", "teaching"))
-print(data)
+
 if (glasshouse == "PC2") {
     sensor.number <- 11}
 if (glasshouse == "teaching") {
@@ -102,13 +102,13 @@ my.data$V1 <- as.numeric(as.character(my.data$V1))
 
 # identify sensors
 if (glasshouse == "teaching") {
-sensor.names <- c("TempHum01", "Lux01", "Temp", "TempHum02", "Lux02")
+sensor.names <- c("TempHum01", "PAR01", "Temp", "TempHum02", "PAR02")
 sensor.name.table <- data.frame(SensorID = 1:sensor.number,
                                 SensorName = sensor.names)
 
 } 
 if (glasshouse == "PC2") { 
-sensor.names <- c("TempHum01", "Lux01", "TempHum02", "Lux02", "TempHum03", "Lux03", "CO2_chamber02", "CO2_chamber03", "TempHum04", "TempHum05", "TempHum06") 
+sensor.names <- c("TempHum01", "PAR01", "TempHum02", "PAR02", "TempHum03", "PAR03", "CO21", "CO22", "TempHum04", "TempHum05", "TempHum06") 
 sensor.name.table <- data.frame(SensorID = 1:sensor.number,
                                 SensorName = sensor.names)
 }
@@ -150,7 +150,7 @@ my.data.all <- rbind(my.data.noV4, my.V4)
 # +++++++++++++++++++++++++
 
 # putting the data in wide format
-# require(reshape2) # will be loaded when package is loaded
+# require(reshape2) # will be loaded on when package is loaded
 
 # drop V1 from the data, now redundant
 V1column.no <- which(names(my.data.all) == "V1")
@@ -159,19 +159,6 @@ my.data.all.noV1 <- my.data.all[, -V1column.no]
 my.data.all.cast <- reshape2::dcast(my.data.all.noV1,
                     value.var = "V3",
                     TIME ~ SensorName)
-
-# Re-naming some sensors, as the PC2 glasshouse has outside sensors as well.
-if (glasshouse == "PC2") {
-# taking care of the windspeed and winddirection sensor
-#names(my.data.all.cast) <- gsub("Temperature04", "Lux04", names(my.data.all.cast))
-names(my.data.all.cast) <- gsub("Humidity05", "Windspeed", names(my.data.all.cast))
-names(my.data.all.cast) <- gsub("Temperature05", "Winddirection", names(my.data.all.cast))
-
-# taking care of unknown sensors
-names(my.data.all.cast) <- gsub("Humidity06", "Unknown_sensor1", names(my.data.all.cast))
-names(my.data.all.cast) <- gsub("Temperature06", "Unknown_sensor2", names(my.data.all.cast))
-}
-
 return(my.data.all.cast)
 
 }

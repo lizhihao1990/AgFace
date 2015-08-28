@@ -27,7 +27,8 @@ HH2SoilMoistureProcess <- function(mydf, is.first = FALSE, pre.season = FALSE, r
  # merge data with treatment information
  mydf <- merge(mydf, PR2.treat.info,
            by.x = "Sample",
-           by.y = "PR2ID")
+           by.y = "PR2ID",
+           all.x = TRUE)
  
  # re-order mydf
  mydf <- mydf[with(mydf, order(Sample, Depth)), ]

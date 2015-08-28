@@ -12,7 +12,7 @@ source("~/AgFace/R_scripts/import_Campbell.R")
 # import first file
 #df <- CampbellAllImport(logger.folder = the.folder,
 #                        log.interval  = "5Min")
-df <- CampbellFileImport("out.dat")
+df <- CampbellFileImport("CR1000_6_SYS6_5Min_direct.dat")
 
 resistor.date <- as.POSIXct("2015-05-01 12:00:00", tz = "Australia/Melbourne")
 df <- df[df$TIMESTAMP >= resistor.date, ]

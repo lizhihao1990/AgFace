@@ -7,5 +7,6 @@ Depends: R (>= 3.0.0)
 License: GPL-2
 LazyData: true
 Imports: plyr, reshape2, ggplot2, sp, maptools
+Suggests: parallel
 Maintainer: Markus Löw <m.loew@unimelb.edu.au>
 URL: https://github.com/MarkusLoew/AgFace/tree/master/packages/CampbellLogger

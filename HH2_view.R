@@ -33,6 +33,7 @@ sm.recal <- ddply(sm,
    
 })
 
+sm.recal <- sm.recal[!is.na(sm.recal$Year), ]
 sm.recal$Date <- as.Date(sm.recal$Time, tz = "Australia/Melbourne")
 
 library(ggplot2)
@@ -40,14 +41,15 @@ source("~/AgFace/R_scripts/MyThemes.R")
 
 library(plyr)
 out <- ddply(sm.recal,
-             .(Trial, Ring, Depth),
+             .(Trial, Date, Ring, Depth),
              summarise,
              mean = mean(volSWC.recal, na.rm = TRUE))
+out.wet <- out[out$Trial == "WetSump", ]
 
 p <- ggplot(sm.recal, aes(x = Date, y = Percent_Vol))
   p <- p + geom_hline(yintercept = 50, colour = "grey", linetype = "dotted")
   p <- p + geom_line(aes(colour = as.factor(Sample)))
-  p <- p + geom_point(aes(colour = as.factor(Sample)))
+  #p <- p + geom_point(aes(colour = as.factor(Sample)))
   #p <- p + geom_hline(data = out, aes(yintercept = mean))
   p <- p + facet_grid(Depth ~ Trial * Ring)
   p <- p + labs(y = expression("Soil moisture, uncalibrated (%)"))
@@ -60,7 +62,7 @@ fig.tubes.time.percent <- p
 p <- ggplot(sm.recal, aes(x = Date, y = volSWC.recal))
   p <- p + geom_hline(yintercept = 1, colour = "grey", linetype = "dotted")
   p <- p + geom_line(aes(colour = as.factor(Sample)))
-  p <- p + geom_point(aes(colour = as.factor(Sample)))
+  #p <- p + geom_point(aes(colour = as.factor(Sample)))
   #p <- p + geom_hline(data = out, aes(yintercept = mean))
   p <- p + facet_grid(Depth ~ Trial * Ring)
   p <- p + labs(y = expression("Soil moisture, calibrated Dec 2014 "(m^3*m^-3)))
@@ -112,7 +114,8 @@ p <- ggplot(sm.recal[sm.recal$Ring == "3" & sm.recal$Trial == "TraitFace", ],
   p <- p + facet_grid(Trial * Ring ~ Date)
   p <- p + scale_y_reverse()
   p <- p + labs(x = expression("Soil moisture, calibrated Dec 2014 "(m^3*m^-3)),
-                y = "Depth (mm)")
+                y = "Depth (mm)",
+                colour = "Tube#")
   p <- p + theme_my
   #p <- p + theme(legend.position = "none")
 p
@@ -126,29 +129,58 @@ p <- ggplot(sm.recal[sm.recal$Ring == "15" & sm.recal$Trial == "TraitFace", ],
   p <- p + facet_grid(Trial * Ring ~ Date)
   p <- p + scale_y_reverse()
   p <- p + labs(x = expression("Soil moisture, calibrated Dec 2014 "(m^3*m^-3)),
-                y = "Depth (mm)")
+                y = "Depth (mm)",
+                colour = "Tube#")
   p <- p + theme_my
   #p <- p + theme(legend.position = "none")
 p
 fig.tubes.xprofiles.select15 <- p
 
 
+p <- ggplot(sm.recal[sm.recal$Ring == "1" & sm.recal$Trial == "NFace", ],
+            aes(x = volSWC.recal, y = Depth))  
+  p <- p + geom_vline(xintercept = 1, colour = "grey", linetype = "dotted")
+  p <- p + geom_path(aes(colour = as.factor(Sample)))
+  #p <- p + geom_vline(data = out, aes(xintercept = mean))
+  p <- p + facet_grid(Trial * Ring ~ Date)
+  p <- p + scale_y_reverse()
+  p <- p + labs(x = expression("Soil moisture, calibrated Dec 2014 "(m^3*m^-3)),
+                y = "Depth (mm)",
+                colour = "Tube#")
+  p <- p + theme_my
+  #p <- p + theme(legend.position = "none")
+p
+fig.tubes.xprofiles.selectNF3 <- p
+
+p <- ggplot(sm.recal[sm.recal$Trial == "TraitFace", ], 
+            aes(x = Date, y = volSWC.recal))
+  p <- p + geom_hline(yintercept = 0.5, linetype = "dotted", colour = "grey")
+  p <- p + geom_point(aes(y = mean, colour = Trial), size = rel(1), data = out.wet)
+  p <- p + stat_summary(aes(linetype = CO2_treatment, colour = Irrigation), 
+                        fun.data = "mean_sdl", mult = 1, geom = "line")
+  p <- p + stat_summary(aes(colour = Irrigation, shape = CO2_treatment), 
+                        fun.data = "mean_sdl", mult = 1)
+  p <- p + facet_grid(Depth ~ Crop * Cultivar)
+  p <- p + theme_my
+  p <- p + labs(y = expression("Mean soil moisture per treatment, calibrated Dec 2014 "(m^3*m^-3)))
+p
+fig.mean.timecourse <- p
+
 my.figures <- ls()[grep("^fig", ls())]
 my.figures.list <- llply(my.figures,
               function(x) get(x))
 names(my.figures.list) <- my.figures
 
-my.width = 27
-my.height = 21
+my.width = 32
+my.height = 18
 
 pdf(file = "Soil_moisture_figures.pdf",
     width = my.width/2.54, height = my.height/2.54)
     print(my.figures.list)
 dev.off()
 
-data(iris)
-p <- ggplot(iris, aes(x = Sepal.Width, y = Petal.Width))
-  p <- p + geom_point()
-  p <- p + stat_summary(fun.data = "mean_sdl")
-p
-
+sm.recal.out <- sm.recal 
+names(sm.recal.out) <- gsub("volSWC.recal", "Vol_soil_water_content_m3m-3", names(sm.recal))
+write.csv(sm.recal.out,
+          file = "Soil_moisture_calibrated_Dec_2014.csv",
+          row.names = F, na = "")

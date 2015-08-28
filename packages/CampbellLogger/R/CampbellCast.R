@@ -9,6 +9,11 @@ CampbellCast <- function(data, use.parallel = FALSE) {
 	# require(plyr)     # will be loaded when package is loaded
 	# require(reshape2) # will be loaded when package is loaded
 	
+	# Check for parallel package
+	if (isTRUE(use.parallel) == FALSE) {
+           stopifnot("parallel" %in% rownames(installed.packages()))
+	}
+	
 	# determine the character-type parameters
 	# remove them before reshaping to ensure all values are numeric
 	my.characters <- sapply(data[, 1:ncol(data)], is.character)
