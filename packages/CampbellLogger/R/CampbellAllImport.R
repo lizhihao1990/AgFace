@@ -37,9 +37,14 @@ CampbellAllImport <- function(logger.folder   = "~/AgFace/2015/Campbell_logger/l
          log.interval = "_5Min"
      }
      
-     # check the filenames against the requested logger interval
-     found.files <- grep(log.interval, list.files(), value = TRUE)
-    
+     if (is.na(logger.name)) {
+	     # check the filenames against the requested logger interval
+	     found.files <- grep(log.interval, list.files(), value = TRUE)
+     } else {
+	     message("Processing selected logger.name only")
+	     found.files <- grep(log.interval, list.files(), value = TRUE)
+	     found.files <- grep(logger.name, found.files, value = TRUE)
+     }
      # import all files. Returns a named list of data frames 
           
      if (isTRUE(checkduplicates) == FALSE) {

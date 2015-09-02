@@ -1,6 +1,6 @@
 Package: CampbellLogger
 Title: Imports, combines Campbell logger files
-Version: 0.0.1.6
+Version: 0.0.1.8
 Authors@R: person("Markus", "Loew", email = "m.loew@unimelb.edu.au", role = c("aut", "cre"))
 Description: Import individual Campbell Scientific *.dat files from a CR1000 data logger (specific to the AgFace experiment), or import and merge multiple files of the same log-interval. Calculates sunrise and sunset at AgFace location for any given date. This package is specific to the CR1000 logger configuration of the AgFace experiment.
 Depends: R (>= 3.0.0)
