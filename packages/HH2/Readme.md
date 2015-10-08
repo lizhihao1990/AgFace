@@ -23,7 +23,7 @@ Installation under Windows might require the installation of Rtools. There will 
 ### Example usage
 
 ```{r}
-# using the CampbellLogger library to import files
+# using the HH2 library to import files
 
 library(HH2)
 
