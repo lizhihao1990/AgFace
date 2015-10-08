@@ -136,7 +136,11 @@ ggsave(file = "Fig.01.Tillering_se.pdf",
 ggsave(file = "Fig.01.Tillering_se_poster.pdf", 
        width = my.width * 1.25, height = my.height * 0.75, 
        units = "cm")
-
+       
+ggsave(file = "Fig.01.Tillering_se_poster.png", 
+       width = my.width * 1.25, height = my.height * 0.75, 
+       units = "cm")
+       
 # for Hobart abstract
 p <- ggplot(df[df$Stage != "DC31", ], 
             aes(x = Cultivar, y = Tillers.m2..SS.dry.))
@@ -226,6 +230,10 @@ ggsave(file = "Fig.02.Yield_se.pdf",
        units = "cm")
 
 ggsave(file = "Fig.02.Yield_se_poster.pdf", 
+       width = my.width * 1.25, height = my.height * 0.75, 
+       units = "cm")
+
+ggsave(file = "Fig.02.Yield_se_poster.png", 
        width = my.width * 1.25, height = my.height * 0.75, 
        units = "cm")
 

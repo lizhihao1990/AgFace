@@ -29,9 +29,9 @@ MyKshPlot <- function(data, date = Sys.time(), para = "Kshapp_Avg", ylim = c(0, 
      my.end   <- as.POSIXct(my.end)
      
      # create the figure
-     p <- ggplot2::ggplot(data, ggplot2::aes(x = TIMESTAMP, y = Kshapp_Avg))
-       p <- p + ggplot2::geom_line(aes(colour = SensorID))
-       p <- p + facet_grid(SYSTEM ~ .)
+     p <- ggplot2::ggplot(data, ggplot2::aes_string(x = "TIMESTAMP", y = para))
+       p <- p + ggplot2::geom_line(ggplot2::aes(colour = SensorID))
+       p <- p + ggplot2::facet_grid(SYSTEM ~ .)
        p <- p + ggplot2::theme_bw()
        p <- p + ggplot2::coord_cartesian(xlim = c(my.start, my.end),
                                 ylim = ylim)

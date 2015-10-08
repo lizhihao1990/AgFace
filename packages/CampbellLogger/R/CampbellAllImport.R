@@ -12,6 +12,7 @@
 CampbellAllImport <- function(logger.folder   = "~/AgFace/2015/Campbell_logger/logger_data",
                               log.interval    = "5Min",
                               logger.name     = NA,
+                              time.zone       = "Australia/Melbourne",
                               checkduplicates = TRUE,
                               use.parallel    = FALSE) {
  ## function import all files from logger.folder that match the requestes log.interval
@@ -49,13 +50,13 @@ CampbellAllImport <- function(logger.folder   = "~/AgFace/2015/Campbell_logger/l
           
      if (isTRUE(checkduplicates) == FALSE) {
      	my.list <- lapply(found.files, function (x) 
-     	                  CampbellFileImport(x, checkduplicates = FALSE)) 
+     	                  CampbellFileImport(x, checkduplicates = FALSE, time.zone = time.zone)) 
      } else {
         if (isTRUE(use.parallel) == FALSE) {
-	 	my.list <- lapply(found.files, CampbellFileImport) 
+	 	my.list <- lapply(found.files, CampbellFileImport, time.zone = time.zone) 
 	} else {
 	    	stopifnot("parallel" %in% rownames(installed.packages()))
-	    	my.list <- parallel::mclapply(found.files, CampbellFileImport)
+	    	my.list <- parallel::mclapply(found.files, CampbellFileImport, time.zone = time.zone)
 	}
      }
      names(my.list) <- found.files

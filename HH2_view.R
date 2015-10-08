@@ -82,8 +82,8 @@ p <- ggplot(sm.recal[sm.recal$Trial == "WetSump", ],
   p <- p + labs(y = expression("Soil moisture, calibrated Dec 2014 "(m^3*m^-3)),
                 colour = "Tube#")
   p <- p + theme_my
-#  p <- p + theme(legend.position = "none",
-#                 axis.text.x = element_text(size = rel(0.75), angle = 90))
+  p <- p + theme(legend.position = "none",
+                 axis.text.x = element_text(size = rel(0.75), angle = 90))
 p
 fig.wet.sump.time <- p
 
@@ -162,6 +162,7 @@ p <- ggplot(sm.recal[sm.recal$Trial == "TraitFace", ],
                         fun.data = "mean_sdl", mult = 1)
   p <- p + facet_grid(Depth ~ Crop * Cultivar)
   p <- p + theme_my
+ p <- p + theme(axis.text.x = element_text(size = rel(0.75), angle = 90))
   p <- p + labs(y = expression("Mean soil moisture per treatment, calibrated Dec 2014 "(m^3*m^-3)))
 p
 fig.mean.timecourse <- p

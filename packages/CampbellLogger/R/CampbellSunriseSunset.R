@@ -14,7 +14,7 @@ CampbellSunriseSunset <- function(data, location = Agface.loc, DayLightSaving = 
 
 # Creswick position
 # -37.423003, 143.900472
-Sys.setenv(TZ='Australia/Melbourne')
+Sys.setenv(TZ='GMT')
 
 # provide Agface locations
 # Agface.loc <- matrix(c(142.114477, -36.751367), nrow = 1)

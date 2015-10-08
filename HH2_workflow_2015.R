@@ -20,7 +20,7 @@ setwd("~/AgFace/2015/PR2_Soil_moisture")
 #sm <- HH2SoilMoistureProcess(my.data, is.first = TRUE)
 
 # next file
-my.data2 <- HH2Import("PR2-20150824.csv", sensor.type = "PR2")
+my.data2 <- HH2Import("PR2-20150928.csv", sensor.type = "PR2")
 
 sm <- HH2SoilMoistureProcess(my.data2, is.first = FALSE)
 

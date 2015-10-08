@@ -328,6 +328,10 @@ ggsave(file = "Yield_se_poster.pdf",
        width = my.width * 1.25, height = my.height * 0.75, 
        units = "cm")
 
+ggsave(file = "Yield_se_poster.png", 
+       width = my.width * 1.25, height = my.height * 0.75, 
+       units = "cm")
+
 names(df) <- gsub("X.N_Grain..scan..0..", "X.N_Grain_scan_0", names(df))
 # %N in grains "X.N_Grain..scan..0.."
 p <- ggplot(df[df$Stage == "DC90", ], 

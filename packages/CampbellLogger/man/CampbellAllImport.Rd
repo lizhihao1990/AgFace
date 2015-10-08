@@ -6,7 +6,8 @@
 \usage{
 
   CampbellAllImport(logger.folder = "~/AgFace/2015/Campbell_logger/logger_data",
-  log.interval = "5Min", logger.name = NA, checkduplicates = TRUE,
+  log.interval = "5Min", logger.name = NA,
+  time.zone = "Australia/Melbourne", checkduplicates = TRUE,
   use.parallel = FALSE)
 }
 \arguments{

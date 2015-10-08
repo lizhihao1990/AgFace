@@ -1,0 +1,10 @@
+Package: HH2
+Title: Import DeltaT HH2 moisture meter data 
+Version: 0.0.0.1
+Authors@R: person("Markus", "Loew", email = "m.loew@unimelb.edu.au", role = c("aut", "cre"))
+Description: Imports a specified DeltaT HH2 moisture meter file in csv format. Supports sensor types "PR2" and "ML3" only. csv file has to be in the format of %vol + mV. See HH2 manual on how to set up the HH2 meter accordingly.
+Depends: R (>= 3.0.0)
+License: GPL-2
+LazyData: true
+Maintainer: Markus Loew <m.loew@unimelb.edu.au>
+URL: https://github.com/MarkusLoew/AgFace/tree/master/packages/HH2

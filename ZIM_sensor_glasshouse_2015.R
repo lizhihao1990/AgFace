@@ -16,7 +16,7 @@ IDs <- read.csv("2015-07-27_Glasshouse_configuration.csv")
 
 # import raw ZIM sensor data
 
-the.data <- "21-08-2015-10_16_26_zim_probe_datas_5min_LT_2015-07-23_21_15_00_to_2015-08-21_00_15_00.csv"
+the.data <- "07-09-2015-14_09_19_zim_probe_datas_5min_LT_2015-07-24_01_05_00_to_2015-08-31_13_59_00.csv"
 
 
 df <- read.csv(the.data, sep = "\t")
@@ -164,6 +164,4 @@ p <- ggplot(ZIM.hour, #[ZIM.hour$Day > 205, ],
                 x = expression("Temperature ["~phantom()*degree~C~"]"),
                 colour = "Hour of day")
 p
-
-
 

@@ -4,32 +4,59 @@ library(CampbellLogger)
 
 setwd("~/AgFace/2015/Campbell_logger/Transmissions")
 
-df <- CampbellAllImport(log.interval = "Hourly")
+df <- CampbellAllImport(log.interval = "Hourly", #logger.name = "SYS1",
+                        time.zone = "GMT")
+#individual import for trouble shooting
+#my.folder <- "/home/loewi/AgFace/2015/Campbell_logger/logger_data"
+#my.file <- "SYS2_Hourly.dat"
+#my.import <- paste(my.folder, my.file, sep = "/")
+
+#x <- CampbellFileImport(my.import)
+#my.header   <- read.csv(my.import, skip = 1, nrows = 4)
+#x <- read.csv(my.import, skip = 4, header = F)
+#names(x) <- names(my.header)
+#x$Date <- as.POSIXct(x$TIMESTAMP, tz = "Australia/Melbourne")
 
 df.cast <- CampbellCast(df)
 
 ephemeral.times <- CampbellSunriseSunset(df)
 
-my.time.to.plot <- 2000
+my.time.to.plot <- 1800
 MyRecentPlot("Soil_Avg", my.time.to.plot, df.cast,
              yscale_min = 0, yscale_max = 0.5,
+             sensor.colour = TRUE, cartesian = TRUE)
+MyRecentPlot("PAR_Avg", my.time.to.plot/2, df.cast,
+             yscale_min = 0, yscale_max = 10,
+             sensor.colour = TRUE, cartesian = TRUE)
+MyRecentPlot("PAR_Avg", my.time.to.plot, df.cast, logger = "SYS2", 
+             yscale_min = NA, yscale_max = NA,
              sensor.colour = TRUE, cartesian = TRUE)
 MyRecentPlot("Batt_volt_Min", my.time.to.plot, df.cast,
              yscale_min = NA, yscale_max = NA,
              sensor.colour = FALSE, cartesian = TRUE)
 
-df.cast$Date <- as.Date(df.cast$TIMESTAMP, tz = "Australia/Melbourne")
+df.cast$Date <- as.Date(df.cast$TIMESTAMP)#, tz = "GMT")
 df.cast$Hour <- format(df.cast$TIMESTAMP, "%H")
+ephemeral.times$sunrise <- ephemeral.times$sunrise + 60*60*10
+ephemeral.times$sunset <- ephemeral.times$sunset + 60*60*10
 
 # SYS1 TDR4 knocked or moved on June 25, 9 am?
 # SYS4 TDR4 knocked on June 30, 11 am?
-my.logger1.time <- 166
+my.logger1.time <- 144
 MyRecentPlot("Soil_Avg", my.logger1.time, df.cast, #logger = "SYS1",
              yscale_min = 0, yscale_max = 0.5,
              sensor.colour = TRUE, cartesian = TRUE)
 MyRecentPlot("Batt_volt_Min", my.logger1.time, df.cast, #logger = "SYS3",
              yscale_min = NA, yscale_max = NA,
              sensor.colour = FALSE, cartesian = TRUE)
+my.temp.time <- 24
+MyRecentPlot("Hum_Avg", my.temp.time, df.cast, #logger = "SYS3",
+             yscale_min = 0, yscale_max = 30,
+             sensor.colour = TRUE, cartesian = TRUE)
+MyRecentPlot("Temp_Avg", my.temp.time, df.cast, #logger = "SYS3",
+             yscale_min = NA, yscale_max = NA,
+             sensor.colour = TRUE, cartesian = TRUE)
+             
 #library(ggplot2)
 #p <- ggplot(df[df$Batt_volt_Min < 12 & df$SYSTEM == "SYS3", ], aes(x = Batt_volt_Min, y = Soil_Avg_3_))
 #  p <- p + geom_point()
@@ -72,13 +99,13 @@ p <- ggplot(df.cast.clean,
   p <- p + stat_summary(aes(fill = Ring), fun.data = "mean_cl_normal", mult = 1, geom = "ribbon", alpha = 0.1)
   p <- p + stat_summary(aes(colour = Ring), fun.data = "mean_sdl", mult = 1, geom = "line")
   p <- p + annotate("rect", xmin = my.sunset, 
-            xmax = my.sunrise, ymin = 20, ymax = 45, 
+            xmax = my.sunrise, ymin = 15, ymax = 45, 
             fill = "grey", alpha = 0.1)
   p <- p + scale_colour_brewer(palette = "Set2")
   p <- p + scale_fill_brewer(palette = "Set2")
   p <- p + labs(y = "Mean soil moisture from TDRs, (%)")
   p <- p + theme_my
-  p <- p + coord_cartesian(ylim = c(20, 45))
+  p <- p + coord_cartesian(ylim = c(15, 45))
 p
 
 my.width = 32
