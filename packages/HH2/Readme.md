@@ -12,7 +12,7 @@ for details on the functions provided by this package.
 
 ### Installation
 
-Installation straight from github via
+Installation straight from github (if package "devtools" is already installed) via
 
 ```{r}
 install_github("MarkusLoew/AgFace/packages/HH2")
