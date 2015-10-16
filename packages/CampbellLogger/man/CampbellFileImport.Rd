@@ -5,7 +5,7 @@
 \title{import a Campbell logger *.dat file}
 \usage{
 CampbellFileImport(file, time.zone = "Australia/Melbourne",
-  checkduplicates = TRUE)
+  checkduplicates = TRUE, skip.rows = NA)
 }
 \arguments{
 \item{file}{filename of the dat file}
@@ -13,6 +13,8 @@ CampbellFileImport(file, time.zone = "Australia/Melbourne",
 \item{time.zone}{Time zone, defaults to "Australia/Melbourne"}
 
 \item{checkduplicates}{Check for and remove duplicates from the file. Logical, defaults to TRUE.}
+
+\item{skip.rows}{Number of rows of the start of the file to discard. This si to speed up data import by reducing number of samples. Numeric, defaults to NA.}
 }
 \value{
 data frame with imported *.dat file

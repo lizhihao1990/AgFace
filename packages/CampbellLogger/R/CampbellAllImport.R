@@ -6,6 +6,7 @@
 #' @param logger.folder Full path to the location of the *.dat files. Defaults to "~/AgFace/2015/Campbell_logger/logger_data"
 #' @param log.interval Select the files based on the common log interval that is specified in the filename. Allowed values are \code{"5Min", "15Min", "Hourly", "Daily"}. Only one time interval is allowed.
 #' @param logger.name Select files from one logger only. \code{logger.name} has to match the System name as given in the file name. Allowed values are \code{"SYS1", "SYS2", ..., "SYS8"}
+#' @param skip.rows. Number of rows to skip in the file to speed up file import. Numeric, defaults to NA.
 #' @param use.parallel Logical. Option to use parallel processing for the file import. Parallel-computing has to be configured before this option can be used. Defaults to FALSE.
 #' @return Returns data frame with all imported *.dat files.
 
@@ -14,6 +15,7 @@ CampbellAllImport <- function(logger.folder   = "~/AgFace/2015/Campbell_logger/l
                               logger.name     = NA,
                               time.zone       = "Australia/Melbourne",
                               checkduplicates = TRUE,
+                              skip.rows       = NA,
                               use.parallel    = FALSE) {
  ## function import all files from logger.folder that match the requestes log.interval
  ## returns data frame of all files
@@ -53,10 +55,10 @@ CampbellAllImport <- function(logger.folder   = "~/AgFace/2015/Campbell_logger/l
      	                  CampbellFileImport(x, checkduplicates = FALSE, time.zone = time.zone)) 
      } else {
         if (isTRUE(use.parallel) == FALSE) {
-	 	my.list <- lapply(found.files, CampbellFileImport, time.zone = time.zone) 
+	 	my.list <- lapply(found.files, function(x) CampbellFileImport(x, time.zone = time.zone, skip.rows = skip.rows)) 
 	} else {
 	    	stopifnot("parallel" %in% rownames(installed.packages()))
-	    	my.list <- parallel::mclapply(found.files, CampbellFileImport, time.zone = time.zone)
+	    	my.list <- parallel::mclapply(found.files, function(x) CampbellFileImport(x, skip.rows = skip.rows, time.zone = time.zone))
 	}
      }
      names(my.list) <- found.files

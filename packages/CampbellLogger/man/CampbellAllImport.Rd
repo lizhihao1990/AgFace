@@ -8,7 +8,7 @@
   CampbellAllImport(logger.folder = "~/AgFace/2015/Campbell_logger/logger_data",
   log.interval = "5Min", logger.name = NA,
   time.zone = "Australia/Melbourne", checkduplicates = TRUE,
-  use.parallel = FALSE)
+  skip.rows = NA, use.parallel = FALSE)
 }
 \arguments{
 \item{logger.folder}{Full path to the location of the *.dat files. Defaults to "~/AgFace/2015/Campbell_logger/logger_data"}
@@ -18,6 +18,8 @@
 \item{logger.name}{Select files from one logger only. \code{logger.name} has to match the System name as given in the file name. Allowed values are \code{"SYS1", "SYS2", ..., "SYS8"}}
 
 \item{use.parallel}{Logical. Option to use parallel processing for the file import. Parallel-computing has to be configured before this option can be used. Defaults to FALSE.}
+
+\item{skip.rows.}{Number of rows to skip in the file to speed up file import. Numeric, defaults to NA.}
 }
 \value{
 Returns data frame with all imported *.dat files.

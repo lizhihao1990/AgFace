@@ -42,16 +42,16 @@ ephemeral.times$sunset <- ephemeral.times$sunset + 60*60*10
 
 # SYS1 TDR4 knocked or moved on June 25, 9 am?
 # SYS4 TDR4 knocked on June 30, 11 am?
-my.logger1.time <- 144
+my.logger1.time <- 200
 MyRecentPlot("Soil_Avg", my.logger1.time, df.cast, #logger = "SYS1",
              yscale_min = 0, yscale_max = 0.5,
              sensor.colour = TRUE, cartesian = TRUE)
 MyRecentPlot("Batt_volt_Min", my.logger1.time, df.cast, #logger = "SYS3",
              yscale_min = NA, yscale_max = NA,
              sensor.colour = FALSE, cartesian = TRUE)
-my.temp.time <- 24
+my.temp.time <- 96
 MyRecentPlot("Hum_Avg", my.temp.time, df.cast, #logger = "SYS3",
-             yscale_min = 0, yscale_max = 30,
+             yscale_min = NA, yscale_max = NA,
              sensor.colour = TRUE, cartesian = TRUE)
 MyRecentPlot("Temp_Avg", my.temp.time, df.cast, #logger = "SYS3",
              yscale_min = NA, yscale_max = NA,
