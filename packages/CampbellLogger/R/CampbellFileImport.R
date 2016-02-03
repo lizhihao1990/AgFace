@@ -27,7 +27,7 @@ CampbellFileImport <- function(file,
      to.skip <- base.skip + skip.rows
   }
 
-  df <- read.csv(file, skip = to.skip, na.strings = "NAN")
+  df <- read.csv(file, skip = to.skip, na.strings = c("NAN", "+INF", "-INF"))
 
   names(df) <- my.header
   names(df) <- gsub("\\.", "_", names(df))

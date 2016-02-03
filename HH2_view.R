@@ -83,7 +83,7 @@ p <- ggplot(sm.recal[sm.recal$Trial == "WetSump", ],
                 colour = "Tube#")
   p <- p + theme_my
   p <- p + theme(legend.position = "none",
-                 axis.text.x = element_text(size = rel(0.75), angle = 90))
+                 axis.text.x = element_text(size = rel(0.85), angle = 0))
 p
 fig.wet.sump.time <- p
 
@@ -102,7 +102,9 @@ p <- ggplot(sm.recal,
   p <- p + labs(x = expression("Soil moisture, calibrated Dec 2014 "(m^3*m^-3)),
                 y = "Depth (mm)")
   p <- p + theme_my
-  p <- p + theme(legend.position = "none")
+  p <- p + theme(legend.position = "none",
+                 axis.text = element_text(size = rel(0.5)),
+                 strip.text.x = element_text(size = rel(0.75)))
 p
 fig.tubes.xprofiles <- p
 
@@ -117,7 +119,9 @@ p <- ggplot(sm.recal[sm.recal$Ring == "3" & sm.recal$Trial == "TraitFace", ],
                 y = "Depth (mm)",
                 colour = "Tube#")
   p <- p + theme_my
-  #p <- p + theme(legend.position = "none")
+  p <- p + theme(legend.position = "none",
+                 axis.text = element_text(size = rel(0.5)),
+                 strip.text.x = element_text(size = rel(0.75)))
 p
 fig.tubes.xprofiles.select03 <- p
 
@@ -132,7 +136,9 @@ p <- ggplot(sm.recal[sm.recal$Ring == "15" & sm.recal$Trial == "TraitFace", ],
                 y = "Depth (mm)",
                 colour = "Tube#")
   p <- p + theme_my
-  #p <- p + theme(legend.position = "none")
+  p <- p + theme(legend.position = "none",
+                 axis.text = element_text(size = rel(0.5)),
+                 strip.text.x = element_text(size = rel(0.75)))
 p
 fig.tubes.xprofiles.select15 <- p
 
@@ -148,7 +154,9 @@ p <- ggplot(sm.recal[sm.recal$Ring == "1" & sm.recal$Trial == "NFace", ],
                 y = "Depth (mm)",
                 colour = "Tube#")
   p <- p + theme_my
-  #p <- p + theme(legend.position = "none")
+  p <- p + theme(legend.position = "none",
+                 axis.text = element_text(size = rel(0.5)),
+                 strip.text.x = element_text(size = rel(0.75)))
 p
 fig.tubes.xprofiles.selectNF3 <- p
 
@@ -162,7 +170,7 @@ p <- ggplot(sm.recal[sm.recal$Trial == "TraitFace", ],
                         fun.data = "mean_sdl", mult = 1)
   p <- p + facet_grid(Depth ~ Crop * Cultivar)
   p <- p + theme_my
- p <- p + theme(axis.text.x = element_text(size = rel(0.75), angle = 90))
+ p <- p + theme(axis.text.x = element_text(size = rel(0.85), angle = 0))
   p <- p + labs(y = expression("Mean soil moisture per treatment, calibrated Dec 2014 "(m^3*m^-3)))
 p
 fig.mean.timecourse <- p

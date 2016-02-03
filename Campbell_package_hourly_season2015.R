@@ -5,8 +5,10 @@ library(CampbellLogger)
 setwd("~/AgFace/2015/Campbell_logger/Transmissions")
 
 df <- CampbellAllImport(log.interval = "Hourly", #logger.name = "SYS1",
-                        time.zone = "GMT")
+                        time.zone = "GMT",
+                        logger.folder = "~/AgFace/2015/Campbell_logger/logger_data_in_season")
 #individual import for trouble shooting
+
 #my.folder <- "/home/loewi/AgFace/2015/Campbell_logger/logger_data"
 #my.file <- "SYS2_Hourly.dat"
 #my.import <- paste(my.folder, my.file, sep = "/")
@@ -18,9 +20,9 @@ df <- CampbellAllImport(log.interval = "Hourly", #logger.name = "SYS1",
 #x$Date <- as.POSIXct(x$TIMESTAMP, tz = "Australia/Melbourne")
 
 # export data
-#write.csv(df,
-#          file = "Hourly_Campbell_logger_data.csv",
-#          row.names = FALSE, na = "")
+write.csv(df,
+          file = "Hourly_Campbell_logger_data.csv",
+          row.names = FALSE, na = "")
 
 df.cast <- CampbellCast(df)
 

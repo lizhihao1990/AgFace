@@ -1,28 +1,21 @@
-# visualise daily weather data Agface
+# import 5Min weather data from Mahabuburs AgFace weather station
+
+# Markus Löw, Dec 2015
+
 library(reshape2)
-library(plyr)
 library(ggplot2)
+library(plyr)
 
 setwd("~/AgFace/2015/Weather")
 
-df <- read.csv("2015 - Daily Ave.csv")
+df <- read.csv("2015 - 05 Min Ave.csv")
 
-# convert Date to date
-df$Time <- paste(df$Date, df$Time, sep = " ")
-df$Date <- as.Date(df$Date, format = "%d/%m/%Y", 
-                   tz = "Australia/Melbourne")
-# convert time to time
-df$Time <- as.POSIXct(df$Time, 
-                      format = "%d/%m/%Y %I:%M:%S %p", 
-                      tz = "Australia/Melbourne")
+df$DateTime <- paste(df$Date, df$Time, sep = " ")
+
+df$DateTime <- as.POSIXct(df$DateTime, format = "%d/%m/%Y %I:%M:%S %p", tz = "GMT")
 
 df.melt <- melt(df,
-                id = c("Date", "Time"))
-
-#p <- ggplot(df, aes(x = Time, y = RainTot..mm.))
-#     p <- p + geom_line()
-#     p <- p + geom_text(label = "Hi", aes(x = mean(df$Time), y = sum(df$RainTot..mm.)))
-#p
+                id.vars = c("Date", "Time", "DateTime"))
 
 # In season data:
 start.season <- "2015-05-26"
@@ -34,21 +27,21 @@ my.start <- "2015-05-26"
 MyPlot <- function(data, my.start = start.season, my.end = end.season) {
   require(ggplot2)
   my.label    <- unique(data$variable)
-  last.date   <- max(data$Time)
-  sum.list    <- c("RainTot..mm.", "Frost..hrs.")
+  last.date   <- max(data$DateTime)
+  sum.list    <- c("Total.Rain..mm.", "Frost..hrs.")
   my.sum      <- sum(data$value, na.rm = TRUE)
   my.mean     <- mean(data$value, na.rm = TRUE)
   my.max      <- max(data$value, na.rm = TRUE)
   my.min      <- min(data$value, na.rm = TRUE)
-  my.meantime <- mean(data$Time, na.rm = TRUE)
+  my.meantime <- mean(data$DateTime, na.rm = TRUE)
   my.max.75   <- 0.75 * my.max
-  my.sum.season <- sum(data$value[data$Time > as.POSIXct(my.start, tz = "Australia/Melbourne") &
+  my.sum.season <- sum(data$value[data$DateTime > as.POSIXct(my.start, tz = "Australia/Melbourne") &
   data$Time < as.POSIXct(my.end, tz = "Australia/Melbourne")], 
   na.rm = TRUE)
-  my.mean.season <- mean(data$value[data$Time > as.POSIXct(my.start, tz = "Australia/Melbourne") &
+  my.mean.season <- mean(data$value[data$DateTime > as.POSIXct(my.start, tz = "Australia/Melbourne") &
   data$Time < as.POSIXct(my.end, tz = "Australia/Melbourne")], na.rm = TRUE)
   
-  p <- ggplot(data, aes(x = Time, y = value))
+  p <- ggplot(data, aes(x = DateTime, y = value))
     p <- p + geom_line()
 
 # before season grey marker    
@@ -71,7 +64,7 @@ MyPlot <- function(data, my.start = start.season, my.end = end.season) {
                       ymax = my.max + (0.1 * my.max),
                       alpha = 0.2)
     p <- p + annotate("text",
-                      x = as.POSIXct("2015-12-08"),
+                      x = as.POSIXct("2015-11-29"),
                       y = my.max - (0.1 * my.max),
                       label = "After season", colour = "whitesmoke")
     if(my.label %in% sum.list) {
@@ -104,18 +97,19 @@ MyPlotList <- dlply(df.melt,
                     function(x) {                   
                     MyPlot(x, my.start = start.season, my.end = end.season)})
 
-pdf(file = "2015_daily_weather_data.pdf",
+pdf(file = "2015_5Min_weather_data.pdf",
     width = 9, height = 9)
 print(MyPlotList)
 dev.off()
 
-in.season <- df.melt[df.melt$Time > as.POSIXct(start.season, tz = "Australia/Melbourne") &
-                     df.melt$Time < as.POSIXct(end.season, tz = "Australia/Melbourne"), ]
+# winddirection plot
+p <- ggplot(df, aes(x = Ave.WndDir..deg., y = Ave.WndSpd..m.s.))
+  p <- p + geom_line(alpha = 0.8)
+  p <- p + coord_polar()
+  p <- p + scale_x_continuous(breaks = c(0, 90, 180, 270, 360))
+  p <- p + theme_bw()
+p
 
-in.season$Weeknumber <- as.numeric(format(in.season$Time, "%W"))
-in.season$DOY <- as.numeric(format(in.season$Time, "%j"))
-
-# number of unique days
-length(sort(unique(in.season$DOY)))
-# number of unique weeks
-length(sort(unique(in.season$Weeknumber)))
+# renaming object for re-use with other data sets
+Five.Min.weather.2015 <- df.melt
+save(Five.Min.weather.2015, file = "5Min_weather_2015.RData", compress = TRUE)

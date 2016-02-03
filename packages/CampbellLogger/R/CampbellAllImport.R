@@ -49,7 +49,7 @@ CampbellAllImport <- function(logger.folder   = "~/AgFace/2015/Campbell_logger/l
 	     found.files <- grep(logger.name, found.files, value = TRUE)
      }
      # import all files. Returns a named list of data frames 
-          
+
      if (isTRUE(checkduplicates) == FALSE) {
      	my.list <- lapply(found.files, function (x) 
      	                  CampbellFileImport(x, checkduplicates = FALSE, time.zone = time.zone)) 

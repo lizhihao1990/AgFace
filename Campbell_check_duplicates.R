@@ -1,10 +1,11 @@
 # with(df[1:1000, ], table(TIMESTAMP, RECORD))
 setwd("~/AgFace/2015/Campbell_logger/Transmissions/data_duplication_simple_program")
 
+
 library(plyr)
 source("~/AgFace/R_scripts/import_Campbell.R")
-
-df <- CampbellFileImport("CR1000_1_SYS8_5Min.dat", checkduplicates = FALSE)
+setwd("~/AgFace/2015/Campbell_logger/logger_data")
+df <- CampbellFileImport("SYS3_Daily.dat", checkduplicates = FALSE)
 
 setwd("~/AgFace/2015/Campbell_logger/Transmissions")
 

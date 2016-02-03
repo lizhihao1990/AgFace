@@ -3,11 +3,9 @@
 #' Author: Markus Löw
 #' Date: May 2015
 #' Imports and processes a DAT file.
-#' @param file Filename of the DAT file as character
-#' @glasshouse Mandatory characterstring, either "PC2" or "teaching" 
+#' @param data Filename of the DAT file as character
+#' @param glasshouse Mandatory characterstring, either "PC2" or "teaching" 
 #' @return returns a data frame containing the data of the specified DAT file
-#' @examples
-#' GlasshouseFileImport("myfile.DAT")
 
 GlasshouseFileImport <- function (data, glasshouse) {
 
