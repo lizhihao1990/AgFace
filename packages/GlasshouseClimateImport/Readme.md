@@ -15,7 +15,7 @@ To enable installations of packages straight from github use:
 install.packages("devtools", dep = TRUE)
 ```
 
-Then
+Then install the "GlasshouseClimateImport" package:
 ```{r}
 install_github("MarkusLoew/AgFace/packages/GlasshouseClimateImport")
 ```
