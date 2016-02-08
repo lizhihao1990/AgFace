@@ -7,7 +7,7 @@
 #' @param glasshouse Mandatory characterstring, either "PC2" or "teaching" 
 #' @return returns a data frame containing the data of the specified DAT file
 
-GlasshouseFileImport <- function (data, glasshouse) {
+GlasshouseFileImportPC2 <- function (data, glasshouse) {
 
 stopifnot(glasshouse %in% c("PC2", "teaching"))
 

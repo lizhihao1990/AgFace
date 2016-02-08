@@ -10,4 +10,5 @@ devtools::document()
 devtools::check()
 devtools::load_all()
 devtools::build()
+# do last step as root
 devtools::install()
