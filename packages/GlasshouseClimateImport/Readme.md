@@ -35,7 +35,7 @@ library(reshape2) # library to re-order the data
 # setwd("~/AgFace/2015/Glasshouses")
 
 # import and merge all DAT files from the folder
-# in the example, the DAT files aer from the PC2 glasshouse.
+# in the example, the DAT files are from the PC2 glasshouse.
 # the two options for "glasshouse" are "PC2" or "teaching".
 df <- GlasshouseFolderImport(glasshouse = "PC2")
         
