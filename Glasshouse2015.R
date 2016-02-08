@@ -1,14 +1,22 @@
 # import 2015 PC2 glasshouse data
 
 library(GlasshouseClimateImport)
+library(reshape2)
+
 setwd("~/AgFace/2015/Glasshouses/PC2")
 
 df <- GlasshouseFolderImport(glasshouse = "PC2")
 
-library(reshape2)
+write.csv(df,
+          file = "PC2Glasshouseclimate_2015.csv",
+          row.names = F,
+          na = "")
+
 # re-melting the data
 my.data.all.melt <- melt(df,
                          id.vars = "TIME")
+
+
 
 # plot
 library(ggplot2)
@@ -26,6 +34,6 @@ my.plots <- dlply(my.data.all.melt,
                  .(variable),
                  function(x) MyPlotFunction(x))
 
-pdf(file = "Glasshouse_figures.pdf", width = 9, height = 9)
+pdf(file = "PC2Glasshouseclimate_2015_figures.pdf", width = 9, height = 9)
 print(my.plots)
 dev.off()

@@ -29,12 +29,15 @@ Installation under Windows might require the installation of Rtools. There will 
 
 # load library
 library(GlasshouseClimateImport)
+library(reshape2) # library to re-order the data
 
 # set the working directory to the folder with the files
 # setwd("~/AgFace/2015/Glasshouses")
 
 # import and merge all DAT files from the folder
-df <- GlasshouseFolderImport()
+# in the example, the DAT files aer from the PC2 glasshouse.
+# the two options for "glasshouse" are "PC2" or "teaching".
+df <- GlasshouseFolderImport(glasshouse = "PC2")
         
 # to visualise the data 
 library(reshape2)
